@@ -155,6 +155,7 @@ struct HabitsView: View {
     @Query(sort: \Habit.createdAt) private var habits: [Habit]
     
     @State private var showingAddHabit = false
+    @State private var showingStreakFreeze = false
     @State private var newHabitTitle = ""
     @State private var selectedIcon = "star.fill"
     
@@ -171,6 +172,14 @@ struct HabitsView: View {
                     .fontWeight(.bold)
                 
                 Spacer()
+                
+                Button(action: { showingStreakFreeze = true }) {
+                    Image(systemName: "snowflake")
+                        .font(.title3)
+                        .foregroundStyle(.blue)
+                }
+                .buttonStyle(.plain)
+                .help("Streak Freezes")
                 
                 Button(action: { showingAddHabit = true }) {
                     Image(systemName: "plus.circle.fill")
@@ -194,10 +203,23 @@ struct HabitsView: View {
                 .foregroundStyle(.secondary)
                 .padding(.bottom)
             
-            // Habits List
+            // Habits List with Drag & Drop
             List {
                 ForEach(habits) { habit in
                     HabitRow(habit: habit)
+                        .draggable(habit.id.uuidString) {
+                            HabitDragPreview(habit: habit)
+                        }
+                        .dropDestination(for: String.self) { items, location in
+                            guard let draggedId = items.first,
+                                  let uuid = UUID(uuidString: draggedId),
+                                  let fromIndex = habits.firstIndex(where: { $0.id == uuid }),
+                                  let toIndex = habits.firstIndex(where: { $0.id == habit.id }) else {
+                                return false
+                            }
+                            moveHabit(from: fromIndex, to: toIndex)
+                            return true
+                        }
                 }
                 .onDelete(perform: deleteHabit)
             }
@@ -214,6 +236,21 @@ struct HabitsView: View {
                 onSave: addHabit,
                 onCancel: { showingAddHabit = false }
             )
+        }
+        .sheet(isPresented: $showingStreakFreeze) {
+            StreakFreezeView()
+        }
+    }
+    
+    private func moveHabit(from source: Int, to destination: Int) {
+        var habitIds = habits.map { $0.id }
+        habitIds.move(fromOffsets: IndexSet([source]), toOffset: destination > source ? destination + 1 : destination)
+        
+        // Update sort order based on new positions
+        for (index, habit) in habits.enumerated() {
+            if let newIndex = habitIds.firstIndex(of: habit.id) {
+                habit.createdAt = Date().addingTimeInterval(TimeInterval(newIndex))
+            }
         }
     }
     
