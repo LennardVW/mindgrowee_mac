@@ -6,11 +6,22 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Build](https://img.shields.io/github/actions/workflow/status/LennardVW/mindgrowee_mac/ci.yml?branch=main)](https://github.com/LennardVW/mindgrowee_mac/actions)
 
-Native macOS Habit Tracker & Journal App built with SwiftUI. Track habits, journal your thoughts, and build better routines - all stored locally on your Mac.
+Native macOS Habit Tracker, Journal & Project Management App built with SwiftUI. Track habits, manage projects, journal your thoughts, and build better routines - all stored locally on your Mac.
+
+**🚀 Production Ready | 🌍 English & German | ♿ Full Accessibility | 📊 Dashboard & Analytics**
 
 ![MindGrowee Screenshot](Assets/screenshot.png)
 
 ## Features
+
+### 📊 Dashboard
+- At-a-glance overview of all your data
+- Quick stats: habits, streaks, journal entries, projects
+- Weekly progress chart
+- Recent journal entries preview
+- Active projects overview
+- Mood trends visualization
+- Time range selector (Today/Week/Month)
 
 ### 📝 Habit Tracker
 - Create and track daily habits
@@ -19,12 +30,24 @@ Native macOS Habit Tracker & Journal App built with SwiftUI. Track habits, journ
 - **Daily Reset**: Habits reset every day at midnight
 - Progress tracking with visual indicators
 - Completion rate statistics
+- Drag & drop to reorder
 
 ### 📔 Journal
 - Daily journal entries
 - Mood tracking (1-5 stars)
 - Tag system for organization
 - Full history view
+- Search by content and tags
+- Real-time filtering
+
+### 📁 Project Management
+- Create projects with deadlines
+- Organize habits into projects
+- Milestone tracking
+- Project templates (Fitness, Learning, Productivity, Mindfulness)
+- Progress visualization
+- Days until deadline counter
+- Project completion tracking
 
 ### 📊 Statistics
 - Total habits count
@@ -34,6 +57,7 @@ Native macOS Habit Tracker & Journal App built with SwiftUI. Track habits, journ
 - Journal entry count
 - Average mood calculation
 - 7-day completion chart
+- Period statistics (Week/Month/Year/All Time)
 
 ### 🎛️ Menu Bar Mode
 - Run in menu bar for quick access
@@ -44,10 +68,15 @@ Native macOS Habit Tracker & Journal App built with SwiftUI. Track habits, journ
 
 ### ⌨️ Keyboard Shortcuts
 - `Cmd+D` - Quick complete habits
+- `Cmd+Shift+A` - Complete all habits
 - `Cmd+Shift+N` - New habit
 - `Cmd+J` - New journal entry
+- `Cmd+Shift+P` - New project
 - `Cmd+Shift+E` - Export data
 - `Cmd+,` - Settings
+- `Cmd+?` - Keyboard shortcuts help
+- `Cmd+1/2/3/4/5` - Switch tabs
+- `Cmd+F` - Search (in Journal)
 
 ### ⚙️ Settings
 - Launch at login
