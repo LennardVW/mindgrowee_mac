@@ -7,7 +7,7 @@ import SwiftData
 class Project {
     @Attribute(.unique) var id: UUID
     var name: String
-    var description: String
+    var projectDescription: String
     var color: String
     var icon: String
     var createdAt: Date
@@ -15,16 +15,13 @@ class Project {
     var isCompleted: Bool
     var completedAt: Date?
     
-    @Relationship(deleteRule: .nullify, inverse: \Habit.project)
     var habits: [Habit]?
-    
-    @Relationship(deleteRule: .cascade, inverse: \Milestone.project)
     var milestones: [Milestone]?
     
     init(name: String, description: String = "", color: String = "blue", icon: String = "folder", deadline: Date? = nil) {
         self.id = UUID()
         self.name = name
-        self.description = description
+        self.projectDescription = description
         self.color = color
         self.icon = icon
         self.createdAt = Date()
@@ -57,7 +54,7 @@ class Project {
 class Milestone {
     @Attribute(.unique) var id: UUID
     var title: String
-    var description: String
+    var milestoneDescription: String
     var targetDate: Date?
     var isCompleted: Bool
     var completedAt: Date?
@@ -68,7 +65,7 @@ class Milestone {
     init(title: String, description: String = "", targetDate: Date? = nil, order: Int = 0) {
         self.id = UUID()
         self.title = title
-        self.description = description
+        self.milestoneDescription = description
         self.targetDate = targetDate
         self.isCompleted = false
         self.completedAt = nil

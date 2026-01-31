@@ -52,6 +52,7 @@ enum QuickAction: String, CaseIterable {
         }
     }
     
+    #if os(iOS)
     var shortcutItem: UIApplicationShortcutItem {
         UIApplicationShortcutItem(
             type: rawValue,
@@ -61,6 +62,7 @@ enum QuickAction: String, CaseIterable {
             userInfo: nil
         )
     }
+    #endif
 }
 
 // MARK: - Quick Actions Bar
@@ -110,38 +112,9 @@ struct QuickActionButton: View {
 }
 
 // MARK: - Today Widget Extension (for macOS)
+// Note: Using modern WidgetKit instead of deprecated NCWidgetProviding
 
-import NotificationCenter
-
-class TodayViewController: NSViewController, NCWidgetProviding {
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Setup widget view
-    }
-    
-    func widgetPerformUpdate(completionHandler: (@escaping (NCUpdateResult) -> Void)) {
-        // Update widget content
-        completionHandler(.newData)
-    }
-}
-
-// MARK: - Share Extension Support
-
-import Social
-
-class ShareViewController: SLComposeServiceViewController {
-    
-    override func isContentValid() -> Bool {
-        return true
-    }
-    
-    override func didSelectPost() {
-        // Handle shared content
-        extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
-    }
-    
-    override func configurationItems() -> [Any]! {
-        return []
-    }
-}
+#if os(macOS)
+// Widget implementation would go here using WidgetKit
+// For now, this is a placeholder for future widget support
+#endif

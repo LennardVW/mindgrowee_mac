@@ -12,10 +12,7 @@ class Habit {
     var createdAt: Date
     var categoryId: UUID?
     
-    @Relationship(deleteRule: .cascade, inverse: \DailyCompletion.habit)
     var completions: [DailyCompletion]?
-    
-    @Relationship(deleteRule: .nullify, inverse: \Project.habits)
     var project: Project?
     
     init(title: String, icon: String, color: String, categoryId: UUID? = nil, project: Project? = nil) {
@@ -34,13 +31,13 @@ class DailyCompletion {
     @Attribute(.unique) var id: UUID
     var date: Date
     var completed: Bool
-    var habit: Habit?
+    var habitID: UUID?
     
     init(date: Date, completed: Bool, habit: Habit) {
         self.id = UUID()
         self.date = date
         self.completed = completed
-        self.habit = habit
+        self.habitID = habit.id
     }
 }
 
