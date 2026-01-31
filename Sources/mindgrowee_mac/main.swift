@@ -757,22 +757,22 @@ struct StatisticsView: View {
                 
                 // Habit Stats
                 HStack(spacing: 20) {
-                    StatCard(title: "Total Habits", value: "\(habits.count)", icon: "list.bullet")
-                    StatCard(title: "Today's Progress", value: "\(Int(completionRate() * 100))%", icon: "checkmark.circle")
+                    StatCard(title: "Total Habits", value: "\(habits.count)", subtitle: "", icon: "list.bullet", color: .blue, progress: nil)
+                    StatCard(title: "Today's Progress", value: "\(Int(completionRate() * 100))%", subtitle: "", icon: "checkmark.circle", color: .green, progress: nil)
                 }
                 .padding(.horizontal)
                 
                 // Streak Stats
                 HStack(spacing: 20) {
-                    StatCard(title: "Current Streak", value: "\(currentStreak()) days", icon: "flame.fill")
-                    StatCard(title: "Best Streak", value: "\(bestStreak()) days", icon: "trophy.fill")
+                    StatCard(title: "Current Streak", value: "\(currentStreak()) days", subtitle: "", icon: "flame.fill", color: .orange, progress: nil)
+                    StatCard(title: "Best Streak", value: "\(bestStreak()) days", subtitle: "", icon: "trophy.fill", color: .yellow, progress: nil)
                 }
                 .padding(.horizontal)
                 
                 // Journal Stats
                 HStack(spacing: 20) {
-                    StatCard(title: "Journal Entries", value: "\(journalEntries.count)", icon: "book.fill")
-                    StatCard(title: "Avg Mood", value: String(format: "%.1f", avgMood()), icon: "star.fill")
+                    StatCard(title: "Journal Entries", value: "\(journalEntries.count)", subtitle: "", icon: "book.fill", color: .purple, progress: nil)
+                    StatCard(title: "Avg Mood", value: String(format: "%.1f", avgMood()), subtitle: "", icon: "star.fill", color: .pink, progress: nil)
                 }
                 .padding(.horizontal)
                 
