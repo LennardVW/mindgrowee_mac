@@ -1,75 +1,6 @@
 import SwiftUI
 import SwiftData
 
-
-
-// MARK: - Models
-
-@Model
-class Habit {
-    @Attribute(.unique) var id: UUID
-    var title: String
-    var icon: String
-    var color: String
-    var createdAt: Date
-    var categoryId: UUID?
-    
-    var completions: [DailyCompletion]?
-    var project: Project?
-    
-    init(title: String, icon: String, color: String, categoryId: UUID? = nil, project: Project? = nil) {
-        self.id = UUID()
-        self.title = title
-        self.icon = icon
-        self.color = color
-        self.categoryId = categoryId
-        self.project = project
-        self.createdAt = Date()
-    }
-}
-
-@Model
-class DailyCompletion {
-    @Attribute(.unique) var id: UUID
-    var date: Date
-    var completed: Bool
-    var habitID: UUID?
-    
-    init(date: Date, completed: Bool, habit: Habit) {
-        self.id = UUID()
-        self.date = date
-        self.completed = completed
-        self.habitID = habit.id
-    }
-}
-
-@Model
-class JournalEntry {
-    @Attribute(.unique) var id: UUID
-    var date: Date
-    var content: String
-    var mood: Int // 1-5
-    var tags: [String]
-    
-    init(date: Date, content: String, mood: Int, tags: [String]) {
-        self.id = UUID()
-        self.date = date
-        self.content = content
-        self.mood = mood
-        self.tags = tags
-    }
-}
-
-// MARK: - Helper Functions
-
-func startOfDay(_ date: Date) -> Date {
-    Calendar.current.startOfDay(for: date)
-}
-
-func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
-    Calendar.current.isDate(date1, inSameDayAs: date2)
-}
-
 // MARK: - Content View
 
 struct ContentView: View {
@@ -148,29 +79,6 @@ struct ContentView: View {
                 showingOnboarding = true
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .quickComplete)) { _ in
-            selectedTab = 0
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .newHabit)) { _ in
-            selectedTab = 0
-            NotificationCenter.default.post(name: .showAddHabit, object: nil)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .newJournal)) { _ in
-            selectedTab = 1
-            NotificationCenter.default.post(name: .showNewJournal, object: nil)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showExport)) { _ in
-            showingExport = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showSettings)) { _ in
-            showingSettings = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showKeyboardShortcuts)) { _ in
-            showingKeyboardShortcuts = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showAbout)) { _ in
-            showingAbout = true
-        }
     }
 }
 
@@ -186,12 +94,10 @@ struct HabitsView: View {
     @State private var selectedIcon = "star.fill"
     
     private let icons = ["star.fill", "heart.fill", "bolt.fill", "flame.fill", "drop.fill", "moon.fill", "sun.max.fill", "figure.walk", "book.fill", "pencil", "guitars.fill", "tv.fill", "gamecontroller.fill", "cart.fill", "creditcard.fill"]
-    
     private let colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             HStack {
                 Text("Today's Habits")
                     .font(.largeTitle)
@@ -205,7 +111,6 @@ struct HabitsView: View {
                         .foregroundStyle(.blue)
                 }
                 .buttonStyle(.plain)
-                .help("Streak Freezes")
                 
                 Button(action: { showingAddHabit = true }) {
                     Image(systemName: "plus.circle.fill")
@@ -215,12 +120,10 @@ struct HabitsView: View {
             }
             .padding()
             
-            // Date display
             Text(todayString())
                 .font(.headline)
                 .foregroundStyle(.secondary)
             
-            // Progress
             ProgressView(value: completionRate())
                 .padding(.horizontal)
             
@@ -229,33 +132,12 @@ struct HabitsView: View {
                 .foregroundStyle(.secondary)
                 .padding(.bottom)
             
-            // Habits List with Drag & Drop
             List {
                 ForEach(habits) { habit in
                     HabitRow(habit: habit)
-                        .draggable(habit.id.uuidString) {
-                            HabitDragPreview(habit: habit)
-                        }
-                        .dropDestination(for: String.self) { items, location in
-                            guard let draggedId = items.first,
-                                  let uuid = UUID(uuidString: draggedId),
-                                  let fromIndex = habits.firstIndex(where: { $0.id == uuid }),
-                                  let toIndex = habits.firstIndex(where: { $0.id == habit.id }) else {
-                                return false
-                            }
-                            moveHabit(from: fromIndex, to: toIndex)
-                            return true
-                        }
                 }
-                .onDelete(perform: deleteHabit)
             }
             .listStyle(.inset)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showAddHabit)) { _ in
-            showingAddHabit = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .completeAllHabits)) { _ in
-            completeAllHabits()
         }
         .sheet(isPresented: $showingAddHabit) {
             AddHabitSheet(
@@ -271,56 +153,8 @@ struct HabitsView: View {
         }
     }
     
-    private func moveHabit(from source: Int, to destination: Int) {
-        var habitIds = habits.map { $0.id }
-        habitIds.move(fromOffsets: IndexSet([source]), toOffset: destination > source ? destination + 1 : destination)
-        
-        // Update sort order based on new positions
-        for (index, habit) in habits.enumerated() {
-            if let newIndex = habitIds.firstIndex(of: habit.id) {
-                habit.createdAt = Date().addingTimeInterval(TimeInterval(newIndex))
-            }
-        }
-    }
-    
-    private func completeAllHabits() {
-        let today = startOfDay(Date())
-        var completedCount = 0
-        var hasErrors = false
-        
-        for habit in habits {
-            let isCompleted = habit.completions?.contains { completion in
-                isSameDay(completion.date, today) && completion.completed
-            } ?? false
-            
-            if !isCompleted {
-                let completion = DailyCompletion(date: today, completed: true, habit: habit)
-                
-                // Safe insert with error handling
-                switch modelContext.safeInsert(completion) {
-                case .success:
-                    completedCount += 1
-                case .failure(let error):
-                    Logger.shared.error("Failed to complete habit \(habit.title)", error: error)
-                    hasErrors = true
-                }
-            }
-        }
-        
-        if completedCount > 0 {
-            SoundManager.shared.playSuccess()
-            AccessibilityManager.shared.announce("Completed \(completedCount) habits")
-        }
-        
-        if hasErrors {
-            Logger.shared.warning("Some habits could not be completed")
-        }
-    }
-    
     private func todayString() -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        return formatter.string(from: Date())
+        DateFormatter().with { $0.dateStyle = .full }.string(from: Date())
     }
     
     private func completionRate() -> Double {
@@ -338,67 +172,16 @@ struct HabitsView: View {
     }
     
     private func addHabit() {
-        // Validate input
         let trimmedTitle = newHabitTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedTitle.isEmpty else {
-            Logger.shared.warning("Attempted to create habit with empty title")
-            return
-        }
+        guard !trimmedTitle.isEmpty else { return }
         
-        // Check for duplicates
-        let existingHabits = (try? modelContext.fetch(FetchDescriptor<Habit>())) ?? []
-        let isDuplicate = existingHabits.contains { 
-            $0.title.lowercased() == trimmedTitle.lowercased() 
-        }
-        
-        guard !isDuplicate else {
-            Logger.shared.warning("Attempted to create duplicate habit: \(trimmedTitle)")
-            // Could show alert here
-            return
-        }
-        
-        // Validate icon and color
         let safeIcon = icons.contains(selectedIcon) ? selectedIcon : "star.fill"
         let safeColor = colors.randomElement() ?? "blue"
         
-        // Create habit
         let habit = Habit(title: trimmedTitle, icon: safeIcon, color: safeColor)
-        
-        // Save with error handling
-        switch modelContext.safeInsert(habit) {
-        case .success:
-            Logger.shared.info("Created new habit: \(trimmedTitle)")
-            newHabitTitle = ""
-            showingAddHabit = false
-        case .failure(let error):
-            Logger.shared.error("Failed to create habit", error: error)
-        }
-    }
-    
-    private func deleteHabit(at offsets: IndexSet) {
-        // Validate indices
-        guard !habits.isEmpty else {
-            Logger.shared.warning("Attempted to delete from empty habits list")
-            return
-        }
-        
-        for index in offsets {
-            // Bounds check
-            guard index >= 0 && index < habits.count else {
-                Logger.shared.error("Invalid index for deletion: \(index)")
-                continue
-            }
-            
-            let habit = habits[index]
-            
-            // Safe delete with error handling
-            switch modelContext.safeDelete(habit) {
-            case .success:
-                Logger.shared.info("Deleted habit: \(habit.title)")
-            case .failure(let error):
-                Logger.shared.error("Failed to delete habit", error: error)
-            }
-        }
+        modelContext.insert(habit)
+        newHabitTitle = ""
+        showingAddHabit = false
     }
 }
 
@@ -407,7 +190,6 @@ struct HabitsView: View {
 struct HabitRow: View {
     let habit: Habit
     @Environment(\.modelContext) private var modelContext
-    @State private var showingDetail = false
     
     var body: some View {
         HStack {
@@ -421,15 +203,6 @@ struct HabitRow: View {
             
             Spacer()
             
-            // Edit button
-            Button(action: { showingDetail = true }) {
-                Image(systemName: "info.circle")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            
-            // Complete button
             Button(action: toggleCompletion) {
                 Image(systemName: isCompletedToday() ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
@@ -438,9 +211,6 @@ struct HabitRow: View {
             .buttonStyle(.plain)
         }
         .padding(.vertical, 8)
-        .sheet(isPresented: $showingDetail) {
-            HabitDetailView(habit: habit)
-        }
     }
     
     private func isCompletedToday() -> Bool {
@@ -452,31 +222,11 @@ struct HabitRow: View {
     
     private func toggleCompletion() {
         let today = startOfDay(Date())
-        let wasCompleted = isCompletedToday()
-        
-        do {
-            // Check if already completed today
-            if let existing = habit.completions?.first(where: { isSameDay($0.date, today) }) {
-                existing.completed.toggle()
-                try modelContext.save()
-            } else {
-                // Create new completion
-                let completion = DailyCompletion(date: today, completed: true, habit: habit)
-                modelContext.insert(completion)
-                try modelContext.save()
-            }
-            
-            // Play sound effect
-            if wasCompleted {
-                SoundManager.shared.playHabitUncheck()
-            } else {
-                SoundManager.shared.playHabitComplete()
-            }
-            
-            Logger.shared.info("Toggled completion for habit: \(habit.title)")
-        } catch {
-            Logger.shared.error("Failed to toggle completion", error: error)
-            modelContext.rollback()
+        if let existing = habit.completions?.first(where: { isSameDay($0.date, today) }) {
+            existing.completed.toggle()
+        } else {
+            let completion = DailyCompletion(date: today, completed: true, habit: habit)
+            modelContext.insert(completion)
         }
     }
     
@@ -513,9 +263,6 @@ struct AddHabitSheet: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 300)
             
-            Text("Choose Icon")
-                .font(.headline)
-            
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))], spacing: 15) {
                 ForEach(icons, id: \.self) { iconName in
                     Button(action: { icon = iconName }) {
@@ -532,10 +279,7 @@ struct AddHabitSheet: View {
             
             HStack {
                 Button("Cancel", action: onCancel)
-                    .keyboardShortcut(.cancelAction)
-                
                 Button("Save", action: onSave)
-                    .keyboardShortcut(.defaultAction)
                     .disabled(title.isEmpty)
             }
             .padding()
@@ -554,16 +298,6 @@ struct JournalView: View {
     @State private var showingNewEntry = false
     @State private var searchText = ""
     
-    var filteredEntries: [JournalEntry] {
-        if searchText.isEmpty {
-            return entries
-        }
-        return entries.filter { entry in
-            entry.content.localizedCaseInsensitiveContains(searchText) ||
-            entry.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
-    
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -581,45 +315,12 @@ struct JournalView: View {
             }
             .padding()
             
-            // Search bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                
-                TextField("Search entries...", text: $searchText)
-                    .textFieldStyle(.plain)
-                
-                if !searchText.isEmpty {
-                    Button(action: { searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(8)
-            .background(Color.gray.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(.horizontal)
-            
-            // Entry count
-            if !searchText.isEmpty {
-                Text("\(filteredEntries.count) results")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 4)
-            }
-            
             List {
-                ForEach(filteredEntries) { entry in
+                ForEach(entries) { entry in
                     JournalRow(entry: entry)
                 }
-                .onDelete(perform: deleteEntry)
             }
             .listStyle(.inset)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showNewJournal)) { _ in
-            showingNewEntry = true
         }
         .sheet(isPresented: $showingNewEntry) {
             NewEntrySheet(onSave: { content, mood, tags in
@@ -629,12 +330,6 @@ struct JournalView: View {
             }, onCancel: {
                 showingNewEntry = false
             })
-        }
-    }
-    
-    private func deleteEntry(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(filteredEntries[index])
         }
     }
 }
@@ -653,7 +348,6 @@ struct JournalRow: View {
                 
                 Spacer()
                 
-                // Mood indicator
                 HStack(spacing: 2) {
                     ForEach(1...5, id: \.self) { i in
                         Image(systemName: i <= entry.mood ? "star.fill" : "star")
@@ -666,16 +360,6 @@ struct JournalRow: View {
             Text(entry.content)
                 .font(.body)
                 .lineLimit(3)
-            
-            if !entry.tags.isEmpty {
-                HStack {
-                    ForEach(entry.tags, id: \.self) { tag in
-                        Text("#\(tag)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
         }
         .padding(.vertical, 8)
     }
@@ -697,7 +381,6 @@ struct NewEntrySheet: View {
                 .font(.title)
                 .fontWeight(.bold)
             
-            // Mood selector
             HStack {
                 ForEach(1...5, id: \.self) { i in
                     Button(action: { mood = i }) {
@@ -709,28 +392,19 @@ struct NewEntrySheet: View {
                 }
             }
             
-            // Content
             TextEditor(text: $content)
                 .font(.body)
                 .frame(minHeight: 150)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                )
             
-            // Tags
             TextField("Tags (comma separated)", text: $tagInput)
                 .textFieldStyle(.roundedBorder)
             
             HStack {
                 Button("Cancel", action: onCancel)
-                    .keyboardShortcut(.cancelAction)
-                
                 Button("Save") {
                     let tags = tagInput.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
                     onSave(content, mood, tags)
                 }
-                .keyboardShortcut(.defaultAction)
                 .disabled(content.isEmpty)
             }
         }
@@ -755,31 +429,23 @@ struct StatisticsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
                 
-                // Habit Stats
                 HStack(spacing: 20) {
                     StatCard(title: "Total Habits", value: "\(habits.count)", subtitle: "", icon: "list.bullet", color: .blue, progress: nil)
                     StatCard(title: "Today's Progress", value: "\(Int(completionRate() * 100))%", subtitle: "", icon: "checkmark.circle", color: .green, progress: nil)
                 }
                 .padding(.horizontal)
                 
-                // Streak Stats
                 HStack(spacing: 20) {
                     StatCard(title: "Current Streak", value: "\(currentStreak()) days", subtitle: "", icon: "flame.fill", color: .orange, progress: nil)
                     StatCard(title: "Best Streak", value: "\(bestStreak()) days", subtitle: "", icon: "trophy.fill", color: .yellow, progress: nil)
                 }
                 .padding(.horizontal)
                 
-                // Journal Stats
                 HStack(spacing: 20) {
                     StatCard(title: "Journal Entries", value: "\(journalEntries.count)", subtitle: "", icon: "book.fill", color: .purple, progress: nil)
                     StatCard(title: "Avg Mood", value: String(format: "%.1f", avgMood()), subtitle: "", icon: "star.fill", color: .pink, progress: nil)
                 }
                 .padding(.horizontal)
-                
-                // Weekly Chart
-                WeeklyChart(habits: habits)
-                    .frame(height: 200)
-                    .padding()
             }
             .padding(.vertical)
         }
@@ -807,10 +473,7 @@ struct StatisticsView: View {
                 } ?? false
             }.count
             
-            if habits.isEmpty {
-                return 0
-            }
-            
+            if habits.isEmpty { return 0 }
             let rate = Double(completed) / Double(habits.count)
             if rate >= 0.5 {
                 streak += 1
@@ -819,7 +482,6 @@ struct StatisticsView: View {
                 break
             }
         }
-        
         return streak
     }
     
@@ -827,18 +489,14 @@ struct StatisticsView: View {
         var best = 0
         var current = 0
         
-        // Check last 365 days
         for dayOffset in (0..<365).reversed() {
             guard let date = Calendar.current.date(byAdding: .day, value: -dayOffset, to: startOfDay(Date())) else { continue }
-            
             let completed = habits.filter { habit in
                 habit.completions?.contains { completion in
                     isSameDay(completion.date, date) && completion.completed
                 } ?? false
             }.count
-            
             let rate = habits.isEmpty ? 0 : Double(completed) / Double(habits.count)
-            
             if rate >= 0.5 {
                 current += 1
                 best = max(best, current)
@@ -846,7 +504,6 @@ struct StatisticsView: View {
                 current = 0
             }
         }
-        
         return best
     }
     
@@ -857,53 +514,11 @@ struct StatisticsView: View {
     }
 }
 
-// MARK: - Weekly Chart
+// MARK: - Helper Extension
 
-struct WeeklyChart: View {
-    let habits: [Habit]
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text("Last 7 Days")
-                .font(.headline)
-                .padding(.horizontal)
-            
-            HStack(alignment: .bottom, spacing: 12) {
-                ForEach(0..<7, id: \.self) { dayOffset in
-                    let date = Calendar.current.date(byAdding: .day, value: -(6-dayOffset), to: startOfDay(Date()))!
-                    let rate = completionRate(for: date)
-                    
-                    VStack {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(rate >= 0.5 ? Color.green : (rate > 0 ? Color.orange : Color.gray.opacity(0.3)))
-                            .frame(width: 30, height: max(4, rate * 100))
-                        
-                        Text(dayLetter(for: date))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.gray.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-        }
-    }
-    
-    private func completionRate(for date: Date) -> Double {
-        guard !habits.isEmpty else { return 0 }
-        let completed = habits.filter { habit in
-            habit.completions?.contains { completion in
-                isSameDay(completion.date, date) && completion.completed
-            } ?? false
-        }.count
-        return Double(completed) / Double(habits.count)
-    }
-    
-    private func dayLetter(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "E"
-        return String(formatter.string(from: date).prefix(1))
+extension DateFormatter {
+    func with(_ modify: (DateFormatter) -> Void) -> DateFormatter {
+        modify(self)
+        return self
     }
 }
