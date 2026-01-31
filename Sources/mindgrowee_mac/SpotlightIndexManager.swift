@@ -1,5 +1,5 @@
 import CoreSpotlight
-import MobileCoreServices
+import CoreServices
 import SwiftData
 
 // MARK: - Spotlight Index Manager
