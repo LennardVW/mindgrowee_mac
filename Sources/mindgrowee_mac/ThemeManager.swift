@@ -41,7 +41,11 @@ class ThemeManager: ObservableObject {
     }
     
     func color() -> Color {
-        switch accentColor {
+        colorFor(accentColor)
+    }
+    
+    func colorFor(_ colorName: String) -> Color {
+        switch colorName {
         case "red": return .red
         case "orange": return .orange
         case "yellow": return .yellow

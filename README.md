@@ -62,6 +62,58 @@ Native macOS Habit Tracker & Journal App built with SwiftUI.
 - Validates data format
 - Merge with existing data
 
+### 🌙 Appearance
+- Dark mode support (system or manual)
+- 7 accent colors to choose from
+- Live theme switching
+
+### 🔔 Notifications
+- Daily habit reminders (custom time per habit)
+- Evening summary at 8 PM
+- Streak reminders for active streaks
+
+### 🔊 Sound Effects
+- Audio feedback on habit completion
+- Success sounds for milestones
+- Toggle in settings
+
+### ✏️ Habit Details
+- Edit habit name, icon, color
+- Set daily reminder time
+- View individual habit statistics
+- Check completion history
+
+### 🔍 Journal Search
+- Search by content
+- Search by tags
+- Real-time filtering
+
+### ❄️ Streak Freezes
+- Protect your streaks when you can't complete habits
+- 3 freezes max, regenerate every 7 days
+- Track freeze usage history
+
+### 📊 Period Statistics
+- View stats by Week, Month, Year, or All Time
+- Completion rates per period
+- Habit performance with progress bars
+
+### 📱 Widgets (macOS Sonoma+)
+- Habit Status widget
+- Streak counter widget
+- Quick complete widget
+
+### 🎨 UI/UX
+- Drag & drop to reorder habits
+- Empty state illustrations
+- Progress rings
+- Confetti animations for milestones
+
+### ⌨️ Extended Shortcuts
+- `Cmd+?` - Keyboard shortcuts help
+- `Cmd+1/2/3` - Switch tabs
+- `Cmd+F` - Focus search (in Journal)
+
 ## Tech Stack
 
 - **Swift 5.9**
@@ -93,17 +145,36 @@ Or open in Xcode and run.
 
 ```
 Models/
-├── Habit (id, title, icon, color)
+├── Habit (id, title, icon, color, createdAt)
 ├── DailyCompletion (date, completed, habit relationship)
-└── JournalEntry (date, content, mood, tags)
+├── JournalEntry (date, content, mood, tags)
+└── StreakFreeze (date, reason, isUsed)
 
 Views/
 ├── HabitsView (main habit tracking)
-├── JournalView (journal entries)
+├── JournalView (journal entries + search)
 ├── StatisticsView (charts and stats)
+├── PeriodStatsView (detailed period stats)
 ├── MenuBarView (menu bar quick access)
 ├── ExportView (data export)
-└── SettingsView (preferences + import)
+├── SettingsView (preferences + import)
+├── HabitDetailView (edit habit + reminders)
+├── StreakFreezeView (freeze management)
+├── KeyboardShortcutsView (help)
+└── AboutView (app info)
+
+Managers/
+├── NotificationManager (local notifications)
+├── SoundManager (audio feedback)
+├── ThemeManager (dark mode + colors)
+├── StreakFreezeManager (freeze logic)
+├── AccessibilityManager (voiceover)
+└── HapticManager (feedback)
+
+Widgets/
+├── HabitStatusWidget
+├── StreakWidget
+└── QuickCompleteWidget
 ```
 
 ## Key Design Decisions
@@ -115,6 +186,22 @@ Views/
 5. **Keyboard Driven**: Fast actions without mouse
 6. **Data Portability**: Export and import in multiple formats
 7. **Full Control**: Settings for launch, appearance, and data management
+8. **Accessibility**: VoiceOver support, keyboard navigation, high contrast
+9. **Widgets**: Extend functionality to Notification Center
+10. **Modular**: Separate concerns into focused files
+
+## Testing
+
+Run tests with:
+```bash
+swift test
+```
+
+Tests cover:
+- Date helper functions
+- Streak calculations
+- Theme color conversions
+- Streak freeze logic
 
 ## License
 
