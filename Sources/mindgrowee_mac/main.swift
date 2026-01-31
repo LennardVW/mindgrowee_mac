@@ -73,6 +73,7 @@ struct ContentView: View {
     @State private var showingSettings = false
     @State private var showingKeyboardShortcuts = false
     @State private var showingAbout = false
+    @State private var showingOnboarding = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -121,6 +122,14 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingAbout) {
             AboutView()
+        }
+        .sheet(isPresented: $showingOnboarding) {
+            OnboardingView()
+        }
+        .onAppear {
+            if !OnboardingManager.shared.hasCompletedOnboarding {
+                showingOnboarding = true
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .quickComplete)) { _ in
             selectedTab = 0
