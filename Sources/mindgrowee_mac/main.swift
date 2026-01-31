@@ -244,6 +244,7 @@ struct HabitsView: View {
 struct HabitRow: View {
     let habit: Habit
     @Environment(\.modelContext) private var modelContext
+    @State private var showingDetail = false
     
     var body: some View {
         HStack {
@@ -257,6 +258,15 @@ struct HabitRow: View {
             
             Spacer()
             
+            // Edit button
+            Button(action: { showingDetail = true }) {
+                Image(systemName: "info.circle")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            
+            // Complete button
             Button(action: toggleCompletion) {
                 Image(systemName: isCompletedToday() ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
@@ -265,6 +275,9 @@ struct HabitRow: View {
             .buttonStyle(.plain)
         }
         .padding(.vertical, 8)
+        .sheet(isPresented: $showingDetail) {
+            HabitDetailView(habit: habit)
+        }
     }
     
     private func isCompletedToday() -> Bool {
@@ -276,6 +289,7 @@ struct HabitRow: View {
     
     private func toggleCompletion() {
         let today = startOfDay(Date())
+        let wasCompleted = isCompletedToday()
         
         // Check if already completed today
         if let existing = habit.completions?.first(where: { isSameDay($0.date, today) }) {
@@ -284,6 +298,13 @@ struct HabitRow: View {
             // Create new completion
             let completion = DailyCompletion(date: today, completed: true, habit: habit)
             modelContext.insert(completion)
+        }
+        
+        // Play sound effect
+        if wasCompleted {
+            SoundManager.shared.playHabitUncheck()
+        } else {
+            SoundManager.shared.playHabitComplete()
         }
     }
     
@@ -359,6 +380,17 @@ struct JournalView: View {
     @Query(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
     
     @State private var showingNewEntry = false
+    @State private var searchText = ""
+    
+    var filteredEntries: [JournalEntry] {
+        if searchText.isEmpty {
+            return entries
+        }
+        return entries.filter { entry in
+            entry.content.localizedCaseInsensitiveContains(searchText) ||
+            entry.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -377,8 +409,37 @@ struct JournalView: View {
             }
             .padding()
             
+            // Search bar
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+                
+                TextField("Search entries...", text: $searchText)
+                    .textFieldStyle(.plain)
+                
+                if !searchText.isEmpty {
+                    Button(action: { searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(8)
+            .background(Color.gray.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal)
+            
+            // Entry count
+            if !searchText.isEmpty {
+                Text("\(filteredEntries.count) results")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 4)
+            }
+            
             List {
-                ForEach(entries) { entry in
+                ForEach(filteredEntries) { entry in
                     JournalRow(entry: entry)
                 }
                 .onDelete(perform: deleteEntry)
@@ -401,7 +462,7 @@ struct JournalView: View {
     
     private func deleteEntry(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(entries[index])
+            modelContext.delete(filteredEntries[index])
         }
     }
 }
