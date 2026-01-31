@@ -11,7 +11,7 @@ struct MindGroweeMacApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self, HabitCategory.self, FocusMode.self])
+        .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self, HabitCategory.self, FocusMode.self, Project.self, Milestone.self])
         .commands {
             CommandGroup(replacing: .appSettings) {
                 Button("Settings...") {
@@ -42,6 +42,13 @@ struct MindGroweeMacApp: App {
                     NotificationCenter.default.post(name: .newJournal, object: nil)
                 }
                 .keyboardShortcut("j", modifiers: .command)
+            }
+            
+            CommandMenu("Projects") {
+                Button("New Project") {
+                    NotificationCenter.default.post(name: .newProject, object: nil)
+                }
+                .keyboardShortcut("p", modifiers: [.command, .shift])
             }
             
             CommandMenu("Data") {
@@ -76,6 +83,7 @@ extension Notification.Name {
     static let completeAllHabits = Notification.Name("completeAllHabits")
     static let newHabit = Notification.Name("newHabit")
     static let newJournal = Notification.Name("newJournal")
+    static let newProject = Notification.Name("newProject")
     static let showAddHabit = Notification.Name("showAddHabit")
     static let showNewJournal = Notification.Name("showNewJournal")
     static let showKeyboardShortcuts = Notification.Name("showKeyboardShortcuts")
@@ -92,7 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Setup model container for menu bar
         do {
-            modelContainer = try ModelContainer(for: Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self, HabitCategory.self, FocusMode.self)
+            modelContainer = try ModelContainer(for: Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self, HabitCategory.self, FocusMode.self, Project.self, Milestone.self)
         } catch {
             print("Failed to create model container: \(error)")
         }

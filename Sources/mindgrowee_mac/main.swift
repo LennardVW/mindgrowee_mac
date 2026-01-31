@@ -15,12 +15,16 @@ class Habit {
     @Relationship(deleteRule: .cascade, inverse: \DailyCompletion.habit)
     var completions: [DailyCompletion]?
     
-    init(title: String, icon: String, color: String, categoryId: UUID? = nil) {
+    @Relationship(deleteRule: .nullify, inverse: \Project.habits)
+    var project: Project?
+    
+    init(title: String, icon: String, color: String, categoryId: UUID? = nil, project: Project? = nil) {
         self.id = UUID()
         self.title = title
         self.icon = icon
         self.color = color
         self.categoryId = categoryId
+        self.project = project
         self.createdAt = Date()
     }
 }
@@ -91,11 +95,17 @@ struct ContentView: View {
                 }
                 .tag(1)
             
+            ProjectsView()
+                .tabItem {
+                    Label("Projects", systemImage: "folder.fill")
+                }
+                .tag(2)
+            
             StatisticsView()
                 .tabItem {
                     Label("Stats", systemImage: "chart.bar.fill")
                 }
-                .tag(2)
+                .tag(3)
         }
         .frame(minWidth: 800, minHeight: 600)
         .toolbar {
