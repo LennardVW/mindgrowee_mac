@@ -79,11 +79,6 @@ class Milestone {
 // MARK: - Project Extension for Habit
 
 extension Habit {
-    var project: Project? {
-        get { nil } // Would be set up via @Relationship
-        set { }
-    }
-    
     var isCompletedToday: Bool {
         let today = startOfDay(Date())
         return completions?.contains { isSameDay($0.date, today) && $0.completed } ?? false

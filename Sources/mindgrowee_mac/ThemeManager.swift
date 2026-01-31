@@ -126,32 +126,6 @@ class KeyboardNavigation: ObservableObject {
     }
 }
 
-// MARK: - Accessibility Manager
-
-class AccessibilityManager {
-    static let shared = AccessibilityManager()
-    
-    func announce(_ message: String) {
-        NSAccessibility.post(element: NSApp.mainWindow as Any, notification: .announcementRequested, userInfo: [
-            .announcement: message,
-            .priority: NSAccessibilityPriorityLevel.high.rawValue
-        ])
-    }
-    
-    func announceHabitComplete(_ habitTitle: String) {
-        announce("\(habitTitle) completed")
-    }
-    
-    func announceProgress(current: Int, total: Int) {
-        let remaining = total - current
-        if remaining == 0 {
-            announce("All habits completed!")
-        } else {
-            announce("\(current) of \(total) habits completed, \(remaining) remaining")
-        }
-    }
-}
-
 // MARK: - Haptic Feedback
 
 import AppKit
