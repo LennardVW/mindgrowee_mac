@@ -271,6 +271,7 @@ struct HabitsView: View {
     private func completeAllHabits() {
         let today = startOfDay(Date())
         var completedCount = 0
+        var hasErrors = false
         
         for habit in habits {
             let isCompleted = habit.completions?.contains { completion in
@@ -279,14 +280,25 @@ struct HabitsView: View {
             
             if !isCompleted {
                 let completion = DailyCompletion(date: today, completed: true, habit: habit)
-                modelContext.insert(completion)
-                completedCount += 1
+                
+                // Safe insert with error handling
+                switch modelContext.safeInsert(completion) {
+                case .success:
+                    completedCount += 1
+                case .failure(let error):
+                    Logger.shared.error("Failed to complete habit \(habit.title)", error: error)
+                    hasErrors = true
+                }
             }
         }
         
         if completedCount > 0 {
             SoundManager.shared.playSuccess()
             AccessibilityManager.shared.announce("Completed \(completedCount) habits")
+        }
+        
+        if hasErrors {
+            Logger.shared.warning("Some habits could not be completed")
         }
     }
     
@@ -311,17 +323,66 @@ struct HabitsView: View {
     }
     
     private func addHabit() {
-        guard !newHabitTitle.isEmpty else { return }
-        let color = colors.randomElement() ?? "blue"
-        let habit = Habit(title: newHabitTitle, icon: selectedIcon, color: color)
-        modelContext.insert(habit)
-        newHabitTitle = ""
-        showingAddHabit = false
+        // Validate input
+        let trimmedTitle = newHabitTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else {
+            Logger.shared.warning("Attempted to create habit with empty title")
+            return
+        }
+        
+        // Check for duplicates
+        let existingHabits = (try? modelContext.fetch(FetchDescriptor<Habit>())) ?? []
+        let isDuplicate = existingHabits.contains { 
+            $0.title.lowercased() == trimmedTitle.lowercased() 
+        }
+        
+        guard !isDuplicate else {
+            Logger.shared.warning("Attempted to create duplicate habit: \(trimmedTitle)")
+            // Could show alert here
+            return
+        }
+        
+        // Validate icon and color
+        let safeIcon = icons.contains(selectedIcon) ? selectedIcon : "star.fill"
+        let safeColor = colors.randomElement() ?? "blue"
+        
+        // Create habit
+        let habit = Habit(title: trimmedTitle, icon: safeIcon, color: safeColor)
+        
+        // Save with error handling
+        switch modelContext.safeInsert(habit) {
+        case .success:
+            Logger.shared.info("Created new habit: \(trimmedTitle)")
+            newHabitTitle = ""
+            showingAddHabit = false
+        case .failure(let error):
+            Logger.shared.error("Failed to create habit", error: error)
+        }
     }
     
     private func deleteHabit(at offsets: IndexSet) {
+        // Validate indices
+        guard !habits.isEmpty else {
+            Logger.shared.warning("Attempted to delete from empty habits list")
+            return
+        }
+        
         for index in offsets {
-            modelContext.delete(habits[index])
+            // Bounds check
+            guard index >= 0 && index < habits.count else {
+                Logger.shared.error("Invalid index for deletion: \(index)")
+                continue
+            }
+            
+            let habit = habits[index]
+            
+            // Safe delete with error handling
+            switch modelContext.safeDelete(habit) {
+            case .success:
+                Logger.shared.info("Deleted habit: \(habit.title)")
+            case .failure(let error):
+                Logger.shared.error("Failed to delete habit", error: error)
+            }
         }
     }
 }
@@ -378,20 +439,29 @@ struct HabitRow: View {
         let today = startOfDay(Date())
         let wasCompleted = isCompletedToday()
         
-        // Check if already completed today
-        if let existing = habit.completions?.first(where: { isSameDay($0.date, today) }) {
-            existing.completed.toggle()
-        } else {
-            // Create new completion
-            let completion = DailyCompletion(date: today, completed: true, habit: habit)
-            modelContext.insert(completion)
-        }
-        
-        // Play sound effect
-        if wasCompleted {
-            SoundManager.shared.playHabitUncheck()
-        } else {
-            SoundManager.shared.playHabitComplete()
+        do {
+            // Check if already completed today
+            if let existing = habit.completions?.first(where: { isSameDay($0.date, today) }) {
+                existing.completed.toggle()
+                try modelContext.save()
+            } else {
+                // Create new completion
+                let completion = DailyCompletion(date: today, completed: true, habit: habit)
+                modelContext.insert(completion)
+                try modelContext.save()
+            }
+            
+            // Play sound effect
+            if wasCompleted {
+                SoundManager.shared.playHabitUncheck()
+            } else {
+                SoundManager.shared.playHabitComplete()
+            }
+            
+            Logger.shared.info("Toggled completion for habit: \(habit.title)")
+        } catch {
+            Logger.shared.error("Failed to toggle completion", error: error)
+            modelContext.rollback()
         }
     }
     
