@@ -11,7 +11,7 @@ struct MindGroweeMacApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self])
+        .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self, HabitCategory.self, FocusMode.self])
         .commands {
             CommandGroup(replacing: .appSettings) {
                 Button("Settings...") {
@@ -92,7 +92,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Setup model container for menu bar
         do {
-            modelContainer = try ModelContainer(for: Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self)
+            modelContainer = try ModelContainer(for: Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self, HabitCategory.self, FocusMode.self)
         } catch {
             print("Failed to create model container: \(error)")
         }

@@ -10,15 +10,17 @@ class Habit {
     var icon: String
     var color: String
     var createdAt: Date
+    var categoryId: UUID?
     
     @Relationship(deleteRule: .cascade, inverse: \DailyCompletion.habit)
     var completions: [DailyCompletion]?
     
-    init(title: String, icon: String, color: String) {
+    init(title: String, icon: String, color: String, categoryId: UUID? = nil) {
         self.id = UUID()
         self.title = title
         self.icon = icon
         self.color = color
+        self.categoryId = categoryId
         self.createdAt = Date()
     }
 }
