@@ -13,10 +13,18 @@ All notable changes to mindgrowee_mac will be documented in this file.
 - **View Components**: Empty states, progress rings, confetti animations
 - **Tests**: Unit tests for core functionality
 - **Documentation**: Comprehensive README updates
-
-### Changed
-- Improved habit list with drag & drop support
-- Enhanced UI with empty states and animations
+- **Accessibility**: Full VoiceOver support
+  - Accessibility labels for all interactive elements
+  - Proper accessibility hints and values
+  - Accessibility announcements for important events
+  - Reduced motion support
+  - Accessibility testing helpers
+- **Comprehensive Tests**: New test suite (AccessibilityAndValidationTests.swift)
+  - 30+ unit tests for accessibility features
+  - Validation tests for all input types
+  - Error handling tests
+  - Performance tests
+  - Cache and throttling tests
 
 ## [1.0.0] - 2026-01-31
 
