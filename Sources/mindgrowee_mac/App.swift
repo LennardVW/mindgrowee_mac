@@ -26,6 +26,11 @@ struct MindGroweeMacApp: App {
                 }
                 .keyboardShortcut("d", modifiers: .command)
                 
+                Button("Complete All") {
+                    NotificationCenter.default.post(name: .completeAllHabits, object: nil)
+                }
+                .keyboardShortcut("a", modifiers: [.command, .shift])
+                
                 Button("New Habit") {
                     NotificationCenter.default.post(name: .newHabit, object: nil)
                 }
@@ -68,6 +73,7 @@ struct MindGroweeMacApp: App {
 
 extension Notification.Name {
     static let quickComplete = Notification.Name("quickComplete")
+    static let completeAllHabits = Notification.Name("completeAllHabits")
     static let newHabit = Notification.Name("newHabit")
     static let newJournal = Notification.Name("newJournal")
     static let showAddHabit = Notification.Name("showAddHabit")

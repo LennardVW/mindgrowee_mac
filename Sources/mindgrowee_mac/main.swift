@@ -228,6 +228,9 @@ struct HabitsView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showAddHabit)) { _ in
             showingAddHabit = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .completeAllHabits)) { _ in
+            completeAllHabits()
+        }
         .sheet(isPresented: $showingAddHabit) {
             AddHabitSheet(
                 title: $newHabitTitle,
@@ -251,6 +254,28 @@ struct HabitsView: View {
             if let newIndex = habitIds.firstIndex(of: habit.id) {
                 habit.createdAt = Date().addingTimeInterval(TimeInterval(newIndex))
             }
+        }
+    }
+    
+    private func completeAllHabits() {
+        let today = startOfDay(Date())
+        var completedCount = 0
+        
+        for habit in habits {
+            let isCompleted = habit.completions?.contains { completion in
+                isSameDay(completion.date, today) && completion.completed
+            } ?? false
+            
+            if !isCompleted {
+                let completion = DailyCompletion(date: today, completed: true, habit: habit)
+                modelContext.insert(completion)
+                completedCount += 1
+            }
+        }
+        
+        if completedCount > 0 {
+            SoundManager.shared.playSuccess()
+            AccessibilityManager.shared.announce("Completed \(completedCount) habits")
         }
     }
     
