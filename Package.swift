@@ -13,8 +13,7 @@ let package = Package(
     dependencies: [],
     targets: [
         .executableTarget(
-            name: "mindgrowee_mac",
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            name: "mindgrowee_mac"
         ),
         .testTarget(
             name: "mindgrowee_macTests",
