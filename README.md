@@ -38,6 +38,16 @@ Native macOS Habit Tracker & Journal App built with SwiftUI.
 - `Cmd+D` - Quick complete habits
 - `Cmd+Shift+N` - New habit
 - `Cmd+J` - New journal entry
+- `Cmd+Shift+E` - Export data
+- `Cmd+,` - Settings
+
+### ⚙️ Settings
+- Launch at login
+- Menu bar visibility toggle
+- Dock icon toggle
+- Sound effects toggle
+- Custom streak goals
+- Data management (import/export/reset)
 
 ### 📤 Export Data
 - Export as **JSON** (structured data)
@@ -45,6 +55,12 @@ Native macOS Habit Tracker & Journal App built with SwiftUI.
 - Export as **CSV** (spreadsheet compatible)
 - Saved to Downloads folder
 - Includes all habits, completions, and journal entries
+
+### 📥 Import Data
+- Import from previously exported JSON
+- File picker or paste text
+- Validates data format
+- Merge with existing data
 
 ## Tech Stack
 
@@ -86,7 +102,8 @@ Views/
 ├── JournalView (journal entries)
 ├── StatisticsView (charts and stats)
 ├── MenuBarView (menu bar quick access)
-└── ExportView (data export)
+├── ExportView (data export)
+└── SettingsView (preferences + import)
 ```
 
 ## Key Design Decisions
@@ -96,7 +113,8 @@ Views/
 3. **Persistent Data**: History and stats are kept forever
 4. **Menu Bar Mode**: Always accessible without cluttering dock
 5. **Keyboard Driven**: Fast actions without mouse
-6. **Data Portability**: Export anytime in multiple formats
+6. **Data Portability**: Export and import in multiple formats
+7. **Full Control**: Settings for launch, appearance, and data management
 
 ## License
 
