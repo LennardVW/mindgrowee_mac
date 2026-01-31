@@ -65,22 +65,11 @@ func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
     Calendar.current.isDate(date1, inSameDayAs: date2)
 }
 
-// MARK: - Main App
-
-@main
-struct MindGroweeMacApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self])
-    }
-}
-
 // MARK: - Content View
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    @State private var showingExport = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -103,6 +92,28 @@ struct ContentView: View {
                 .tag(2)
         }
         .frame(minWidth: 800, minHeight: 600)
+        .toolbar {
+            ToolbarItem {
+                Button(action: { showingExport = true }) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .help("Export Data")
+            }
+        }
+        .sheet(isPresented: $showingExport) {
+            ExportView()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .quickComplete)) { _ in
+            selectedTab = 0
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .newHabit)) { _ in
+            selectedTab = 0
+            NotificationCenter.default.post(name: .showAddHabit, object: nil)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .newJournal)) { _ in
+            selectedTab = 1
+            NotificationCenter.default.post(name: .showNewJournal, object: nil)
+        }
     }
 }
 
@@ -160,6 +171,9 @@ struct HabitsView: View {
                 .onDelete(perform: deleteHabit)
             }
             .listStyle(.inset)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showAddHabit)) { _ in
+            showingAddHabit = true
         }
         .sheet(isPresented: $showingAddHabit) {
             AddHabitSheet(
@@ -353,6 +367,9 @@ struct JournalView: View {
                 .onDelete(perform: deleteEntry)
             }
             .listStyle(.inset)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showNewJournal)) { _ in
+            showingNewEntry = true
         }
         .sheet(isPresented: $showingNewEntry) {
             NewEntrySheet(onSave: { content, mood, tags in
