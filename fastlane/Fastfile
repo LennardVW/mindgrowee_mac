@@ -1,0 +1,87 @@
+# Fastfile for MindGrowee
+
+default_platform(:mac)
+
+platform :mac do
+  desc "Run tests"
+  lane :test do
+    scan(
+      scheme: "mindgrowee_mac",
+      destination: "platform=macOS"
+    )
+  end
+
+  desc "Build for distribution"
+  lane :build do
+    gym(
+      scheme: "mindgrowee_mac",
+      export_method: "developer-id",
+      output_directory: "build",
+      build_path: "build"
+    )
+  end
+
+  desc "Build for App Store"
+  lane :build_appstore do
+    gym(
+      scheme: "mindgrowee_mac",
+      export_method: "app-store",
+      output_directory: "build",
+      build_path: "build"
+    )
+  end
+
+  desc "Create release on GitHub"
+  lane :github_release do
+    # Build the app
+    build
+    
+    # Get version from VERSION file
+    version = File.read('../VERSION').strip
+    
+    # Create GitHub release
+    set_github_release(
+      repository_name: "LennardVW/mindgrowee_mac",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "MindGrowee #{version}",
+      tag_name: "v#{version}",
+      description: File.read('../RELEASE_NOTES.md'),
+      commitish: "main",
+      upload_assets: ["build/MindGrowee.app.zip"]
+    )
+  end
+
+  desc "Take screenshots"
+  lane :screenshots do
+    capture_screenshots(
+      scheme: "mindgrowee_macUITests",
+      languages: ["en-US"],
+      output_directory: "fastlane/screenshots"
+    )
+  end
+
+  desc "Upload metadata to App Store Connect"
+  lane :upload_metadata do
+    deliver(
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      force: true
+    )
+  end
+
+  desc "Submit to App Store for review"
+  lane :submit_review do
+    deliver(
+      submit_for_review: true,
+      automatic_release: false,
+      force: true
+    )
+  end
+
+  desc "Run all pre-release checks"
+  lane :prerelease do
+    swiftlint(ignore_exit_status: true)
+    test
+    build
+  end
+end

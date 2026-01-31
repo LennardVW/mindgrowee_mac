@@ -1,0 +1,30 @@
+# Fastlane Configuration for MindGrowee
+
+# Automatic code signing
+# For App Store distribution, use match or manual signing
+# app_identifier "com.mindgrowee.app"
+# apple_id "your@email.com"
+# team_id "YOUR_TEAM_ID"
+
+# For local development and testing
+# use automatic signing in Xcode
+
+# Screenshots configuration
+# Uncomment when ready for App Store
+# languages(['en-US', 'de-DE'])
+# output_directory('./fastlane/screenshots')
+
+# Metadata configuration
+# Uncomment when ready for App Store
+# metadata_path('./fastlane/metadata')
+
+# Deliver configuration for App Store
+# Uncomment when ready to submit
+# deliver(
+#   submit_for_review: false,
+#   automatic_release: false,
+#   force: true,
+#   skip_metadata: false,
+#   skip_screenshots: false,
+#   skip_binary_upload: false
+# )

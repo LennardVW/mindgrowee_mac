@@ -1,0 +1,48 @@
+MindGrowee is a beautiful, native macOS app for tracking habits and journaling your thoughts. Built with SwiftUI and designed for productivity.
+
+KEY FEATURES:
+
+• Habit Tracking
+Create daily habits and track your progress. Each day is a fresh start - build streaks and watch your consistency grow.
+
+• Journal with Mood Tracking
+Record your thoughts, track your mood (1-5 stars), and organize with tags. Look back on your journey anytime.
+
+• Statistics & Insights
+View detailed statistics about your habits, streaks, and mood trends. Identify patterns and celebrate progress.
+
+• Menu Bar Access
+Quick access from your menu bar. Check off habits without opening the main window.
+
+• Focus Modes
+Create custom focus modes for different contexts - Morning Routine, Work, Weekend, etc.
+
+• Categories
+Organize habits into categories: Health, Fitness, Productivity, Learning, and more.
+
+• Notifications
+Set reminders for habits and get evening summaries of your progress.
+
+• Privacy First
+All data is stored locally on your Mac. No accounts, no cloud, complete privacy.
+
+• Import/Export
+Export your data in JSON, Markdown, or CSV format. Import from other apps.
+
+• Widgets
+Add widgets to your Notification Center for quick habit tracking.
+
+• Dark Mode
+Full support for dark mode with customizable accent colors.
+
+PERFECT FOR:
+• Building new habits
+• Breaking bad habits  
+• Tracking daily routines
+• Journaling and reflection
+• Mood tracking
+• Productivity improvement
+
+NO SUBSCRIPTIONS • NO ADS • PRIVACY FOCUSED
+
+Download MindGrowee today and start building better habits!
