@@ -83,29 +83,35 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
+            DashboardView()
+                .tabItem {
+                    Label("Dashboard", systemImage: "rectangle.grid.2x2.fill")
+                }
+                .tag(0)
+            
             HabitsView()
                 .tabItem {
                     Label("Habits", systemImage: "checkmark.circle.fill")
                 }
-                .tag(0)
+                .tag(1)
             
             JournalView()
                 .tabItem {
                     Label("Journal", systemImage: "book.fill")
                 }
-                .tag(1)
+                .tag(2)
             
             ProjectsView()
                 .tabItem {
                     Label("Projects", systemImage: "folder.fill")
                 }
-                .tag(2)
+                .tag(3)
             
             StatisticsView()
                 .tabItem {
                     Label("Stats", systemImage: "chart.bar.fill")
                 }
-                .tag(3)
+                .tag(4)
         }
         .frame(minWidth: 800, minHeight: 600)
         .toolbar {
