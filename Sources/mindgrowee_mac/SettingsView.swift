@@ -12,10 +12,23 @@ struct SettingsView: View {
     @AppStorage("showDockIcon") private var showDockIcon = true
     @AppStorage("soundEffects") private var soundEffects = true
     @AppStorage("streakGoal") private var streakGoal = 7
+    @AppStorage("isDarkMode") private var isDarkMode = false
+    @AppStorage("useSystemAppearance") private var useSystemAppearance = true
+    @AppStorage("accentColor") private var accentColor = "blue"
     
     @State private var showingImport = false
     @State private var showingClearData = false
     @State private var showingReset = false
+    
+    private let accentColors = [
+        ("red", Color.red),
+        ("orange", Color.orange),
+        ("yellow", Color.yellow),
+        ("green", Color.green),
+        ("blue", Color.blue),
+        ("purple", Color.purple),
+        ("pink", Color.pink)
+    ]
     
     var body: some View {
         VStack(spacing: 20) {
@@ -24,6 +37,34 @@ struct SettingsView: View {
                 .fontWeight(.bold)
             
             List {
+                // Appearance Section
+                Section("Appearance") {
+                    Toggle("Use System Appearance", isOn: $useSystemAppearance)
+                    
+                    if !useSystemAppearance {
+                        Toggle("Dark Mode", isOn: $isDarkMode)
+                    }
+                    
+                    HStack {
+                        Text("Accent Color")
+                        Spacer()
+                        HStack(spacing: 8) {
+                            ForEach(accentColors, id: \.name) { color in
+                                Button(action: { accentColor = color.name }) {
+                                    Circle()
+                                        .fill(color.color)
+                                        .frame(width: 24, height: 24)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(accentColor == color.name ? Color.primary : Color.clear, lineWidth: 2)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                
                 // General Section
                 Section("General") {
                     Toggle("Launch at Login", isOn: $launchAtLogin)

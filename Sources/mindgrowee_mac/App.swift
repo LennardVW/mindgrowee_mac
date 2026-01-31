@@ -49,6 +49,17 @@ struct MindGroweeMacApp: App {
                     NotificationCenter.default.post(name: .showSettings, object: nil)
                 }
             }
+            
+            CommandGroup(replacing: .help) {
+                Button("Keyboard Shortcuts") {
+                    NotificationCenter.default.post(name: .showKeyboardShortcuts, object: nil)
+                }
+                .keyboardShortcut("?", modifiers: .command)
+                
+                Button("About MindGrowee") {
+                    NotificationCenter.default.post(name: .showAbout, object: nil)
+                }
+            }
         }
     }
 }
@@ -61,6 +72,8 @@ extension Notification.Name {
     static let newJournal = Notification.Name("newJournal")
     static let showAddHabit = Notification.Name("showAddHabit")
     static let showNewJournal = Notification.Name("showNewJournal")
+    static let showKeyboardShortcuts = Notification.Name("showKeyboardShortcuts")
+    static let showAbout = Notification.Name("showAbout")
 }
 
 // MARK: - App Delegate for Menu Bar

@@ -71,6 +71,8 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showingExport = false
     @State private var showingSettings = false
+    @State private var showingKeyboardShortcuts = false
+    @State private var showingAbout = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -114,6 +116,12 @@ struct ContentView: View {
         .sheet(isPresented: $showingSettings) {
             SettingsView()
         }
+        .sheet(isPresented: $showingKeyboardShortcuts) {
+            KeyboardShortcutsView()
+        }
+        .sheet(isPresented: $showingAbout) {
+            AboutView()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .quickComplete)) { _ in
             selectedTab = 0
         }
@@ -130,6 +138,12 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .showSettings)) { _ in
             showingSettings = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showKeyboardShortcuts)) { _ in
+            showingKeyboardShortcuts = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showAbout)) { _ in
+            showingAbout = true
         }
     }
 }
