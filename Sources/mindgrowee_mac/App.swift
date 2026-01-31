@@ -13,6 +13,13 @@ struct MindGroweeMacApp: App {
         }
         .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self])
         .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings...") {
+                    NotificationCenter.default.post(name: .showSettings, object: nil)
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+            
             CommandMenu("Habits") {
                 Button("Quick Complete") {
                     NotificationCenter.default.post(name: .quickComplete, object: nil)
@@ -30,6 +37,17 @@ struct MindGroweeMacApp: App {
                     NotificationCenter.default.post(name: .newJournal, object: nil)
                 }
                 .keyboardShortcut("j", modifiers: .command)
+            }
+            
+            CommandMenu("Data") {
+                Button("Export...") {
+                    NotificationCenter.default.post(name: .showExport, object: nil)
+                }
+                .keyboardShortcut("e", modifiers: [.command, .shift])
+                
+                Button("Import...") {
+                    NotificationCenter.default.post(name: .showSettings, object: nil)
+                }
             }
         }
     }

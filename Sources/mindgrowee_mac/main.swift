@@ -70,6 +70,7 @@ func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
 struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showingExport = false
+    @State private var showingSettings = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -94,6 +95,13 @@ struct ContentView: View {
         .frame(minWidth: 800, minHeight: 600)
         .toolbar {
             ToolbarItem {
+                Button(action: { showingSettings = true }) {
+                    Image(systemName: "gear")
+                }
+                .help("Settings")
+            }
+            
+            ToolbarItem {
                 Button(action: { showingExport = true }) {
                     Image(systemName: "square.and.arrow.up")
                 }
@@ -102,6 +110,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingExport) {
             ExportView()
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
         .onReceive(NotificationCenter.default.publisher(for: .quickComplete)) { _ in
             selectedTab = 0
@@ -113,6 +124,12 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .newJournal)) { _ in
             selectedTab = 1
             NotificationCenter.default.post(name: .showNewJournal, object: nil)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showExport)) { _ in
+            showingExport = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showSettings)) { _ in
+            showingSettings = true
         }
     }
 }

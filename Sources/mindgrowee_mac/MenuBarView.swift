@@ -92,6 +92,12 @@ struct MenuBarView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 
+                Button(action: openSettings) {
+                    Label("Settings", systemImage: "gear")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                
                 Spacer()
                 
                 Button(action: quitApp) {
@@ -173,6 +179,19 @@ struct MenuBarView: View {
             window.contentView = NSHostingView(rootView: contentView)
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+    
+    private func openSettings() {
+        // Close popover
+        NSApp.keyWindow?.close()
+        
+        // Open main window with settings
+        openMainWindow()
+        
+        // Trigger settings
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NotificationCenter.default.post(name: .showSettings, object: nil)
         }
     }
     
