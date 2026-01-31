@@ -3,7 +3,7 @@ import SwiftData
 
 // MARK: - App with Menu Bar Support
 
-@main
+// Entry point is in main.swift
 struct MindGroweeMacApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     

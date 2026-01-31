@@ -1,6 +1,7 @@
 import CoreSpotlight
 import CoreServices
 import SwiftData
+import AppKit
 
 // MARK: - Spotlight Index Manager
 
@@ -116,7 +117,7 @@ enum SearchResult {
 // MARK: - App Delegate Extension for Spotlight
 
 extension AppDelegate {
-    func application(_ application: NSApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([NSUserActivityRestoring]) -> Void) -> Bool {
+    func application(_ application: NSApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([any NSUserActivityRestoring]) -> Void) -> Bool {
         if userActivity.activityType == CSSearchableItemActionType {
             if let identifier = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String {
                 handleSpotlightSearch(identifier: identifier)

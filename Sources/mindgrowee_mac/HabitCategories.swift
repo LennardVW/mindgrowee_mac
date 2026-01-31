@@ -12,7 +12,6 @@ class HabitCategory {
     var sortOrder: Int
     var createdAt: Date
     
-    @Relationship(deleteRule: .nullify, inverse: \Habit.category)
     var habits: [Habit]?
     
     init(name: String, icon: String, color: String, sortOrder: Int = 0) {

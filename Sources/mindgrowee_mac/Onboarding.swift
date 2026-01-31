@@ -82,7 +82,9 @@ struct OnboardingView: View {
                         .tag(index)
                 }
             }
+            #if os(iOS)
             .tabViewStyle(.page(indexDisplayMode: .never))
+            #endif
             
             // Page indicator
             HStack(spacing: 8) {
@@ -219,7 +221,7 @@ class TipsManager: ObservableObject {
         )
     ]
     
-    private var shownTips: Set<String> = []
+    private var shownTips: Set<UUID> = []
     
     private init() {
         loadShownTips()
