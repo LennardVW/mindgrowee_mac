@@ -27,6 +27,25 @@ Native macOS Habit Tracker & Journal App built with SwiftUI.
 - Average mood calculation
 - 7-day completion chart
 
+### 🎛️ Menu Bar Mode
+- Run in menu bar for quick access
+- Check habits without opening main window
+- Quick stats overview
+- Fast journal entry
+- Open main window anytime
+
+### ⌨️ Keyboard Shortcuts
+- `Cmd+D` - Quick complete habits
+- `Cmd+Shift+N` - New habit
+- `Cmd+J` - New journal entry
+
+### 📤 Export Data
+- Export as **JSON** (structured data)
+- Export as **Markdown** (readable format)
+- Export as **CSV** (spreadsheet compatible)
+- Saved to Downloads folder
+- Includes all habits, completions, and journal entries
+
 ## Tech Stack
 
 - **Swift 5.9**
@@ -42,6 +61,7 @@ All data is stored locally using SwiftData:
 - Journal entries with timestamps
 - **Data persists** across app restarts
 - **Habits reset daily** - each day starts fresh for tracking
+- **Export anytime** - your data is always portable
 
 ## Build & Run
 
@@ -64,7 +84,9 @@ Models/
 Views/
 ├── HabitsView (main habit tracking)
 ├── JournalView (journal entries)
-└── StatisticsView (charts and stats)
+├── StatisticsView (charts and stats)
+├── MenuBarView (menu bar quick access)
+└── ExportView (data export)
 ```
 
 ## Key Design Decisions
@@ -72,7 +94,9 @@ Views/
 1. **Daily Reset**: Habits automatically reset each day so you can build streaks
 2. **Local Only**: No cloud sync, no accounts, completely private
 3. **Persistent Data**: History and stats are kept forever
-4. **Simple & Fast**: Native macOS performance
+4. **Menu Bar Mode**: Always accessible without cluttering dock
+5. **Keyboard Driven**: Fast actions without mouse
+6. **Data Portability**: Export anytime in multiple formats
 
 ## License
 
