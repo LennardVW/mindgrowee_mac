@@ -22,14 +22,16 @@ jobs:
     - name: Run tests
       run: swift test
     
-    - name: Check code formatting
+    - name: Run SwiftLint
       run: |
-        # Check if swift-format is available
-        if command -v swift-format &> /dev/null; then
-          swift-format lint --recursive Sources/
+        if command -v swiftlint &> /dev/null; then
+          swiftlint lint --reporter github-actions-logging
         else
-          echo "swift-format not installed, skipping format check"
+          echo "SwiftLint not installed, installing..."
+          brew install swiftlint
+          swiftlint lint --reporter github-actions-logging
         fi
+      continue-on-error: true
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
