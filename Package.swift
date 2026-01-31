@@ -6,6 +6,7 @@ import PackageDescription
 
 let package = Package(
     name: "mindgrowee_mac",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "mindgrowee_mac", targets: ["mindgrowee_mac"])
