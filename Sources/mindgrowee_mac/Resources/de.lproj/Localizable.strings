@@ -1,0 +1,160 @@
+/* 
+  Localizable.strings
+  mindgrowee_mac
+
+  German localization
+*/
+
+// MARK: - General
+"app_name" = "MindGrowee";
+"ok" = "OK";
+"cancel" = "Abbrechen";
+"save" = "Speichern";
+"delete" = "Löschen";
+"edit" = "Bearbeiten";
+"done" = "Fertig";
+"close" = "Schließen";
+"loading" = "Laden...";
+"error" = "Fehler";
+"success" = "Erfolg";
+"warning" = "Warnung";
+
+// MARK: - Habits
+"habits_title" = "Gewohnheiten";
+"habits_today" = "Heutige Gewohnheiten";
+"habits_empty" = "Noch keine Gewohnheiten";
+"habits_create_first" = "Erste Gewohnheit erstellen";
+"habits_add" = "Gewohnheit hinzufügen";
+"habits_new" = "Neue Gewohnheit";
+"habits_edit" = "Gewohnheit bearbeiten";
+"habits_completed" = "Abgeschlossen";
+"habits_of_completed" = "%d von %d abgeschlossen";
+"habits_streak" = "%d Tage Serie";
+"habits_best_streak" = "Beste Serie: %d Tage";
+"habits_icon" = "Symbol";
+"habits_color" = "Farbe";
+"habits_title_placeholder" = "Gewohnheitsname";
+"habits_category" = "Kategorie";
+"habits_no_category" = "Keine Kategorie";
+"habits_filter_all" = "Alle";
+"habits_complete_all" = "Alle abschließen";
+"habits_completed_count" = "%d abgeschlossen";
+
+// MARK: - Journal
+"journal_title" = "Journal";
+"journal_new" = "Neuer Eintrag";
+"journal_edit" = "Eintrag bearbeiten";
+"journal_empty" = "Noch keine Einträge";
+"journal_write_first" = "Ersten Eintrag schreiben";
+"journal_content_placeholder" = "Wie war dein Tag?";
+"journal_mood" = "Stimmung";
+"journal_tags" = "Tags";
+"journal_tags_placeholder" = "Tags (kommagetrennt)";
+"journal_search" = "Einträge durchsuchen...";
+"journal_results" = "%d Ergebnisse";
+
+// MARK: - Statistics
+"stats_title" = "Statistiken";
+"stats_total_habits" = "Gewohnheiten gesamt";
+"stats_today_progress" = "Heutiger Fortschritt";
+"stats_current_streak" = "Aktuelle Serie";
+"stats_best_streak" = "Beste Serie";
+"stats_journal_entries" = "Journal-Einträge";
+"stats_avg_mood" = "Ø Stimmung";
+"stats_week" = "Woche";
+"stats_month" = "Monat";
+"stats_year" = "Jahr";
+"stats_all_time" = "Gesamt";
+"stats_days_tracked" = "Tage verfolgt";
+"stats_completion_rate" = "Abschlussrate";
+
+// MARK: - Categories
+"category_health" = "Gesundheit";
+"category_fitness" = "Fitness";
+"category_productivity" = "Produktivität";
+"category_learning" = "Lernen";
+"category_mindfulness" = "Achtsamkeit";
+"category_social" = "Sozial";
+"category_creative" = "Kreativ";
+"category_finance" = "Finanzen";
+
+// MARK: - Focus Modes
+"focus_title" = "Fokus-Modi";
+"focus_new" = "Neuer Fokus-Modus";
+"focus_all_habits" = "Alle Gewohnheiten";
+"focus_select" = "Fokus auswählen";
+"focus_habits_count" = "%d Gewohnheiten";
+
+// MARK: - Streak Freezes
+"freeze_title" = "Serien-Schutz";
+"freeze_available" = "%d von 3 verfügbar";
+"freeze_use" = "Schutz nutzen";
+"freeze_use_today" = "Heute Schutz nutzen";
+"freeze_description" = "Nutze einen Schutz um deine Serie zu schützen, wenn du deine Gewohnheiten nicht erledigen kannst. Du erhältst alle 7 Tage einen neuen Schutz.";
+"freeze_history" = "Verlauf";
+
+// MARK: - Settings
+"settings_title" = "Einstellungen";
+"settings_general" = "Allgemein";
+"settings_appearance" = "Erscheinungsbild";
+"settings_goals" = "Ziele";
+"settings_data" = "Daten";
+"settings_about" = "Über";
+"settings_launch_login" = "Beim Login starten";
+"settings_show_menubar" = "In Menüleiste anzeigen";
+"settings_show_dock" = "Dock-Symbol anzeigen";
+"settings_sound" = "Sound-Effekte";
+"settings_dark_mode" = "Dunkelmodus";
+"settings_system_appearance" = "System-Erscheinungsbild";
+"settings_accent_color" = "Akzentfarbe";
+"settings_streak_goal" = "Serien-Ziel";
+"settings_import" = "Daten importieren...";
+"settings_export" = "Daten exportieren...";
+"settings_reset_today" = "Heutigen Fortschritt zurücksetzen";
+"settings_clear_all" = "Alle Daten löschen";
+"settings_version" = "Version";
+"settings_data_storage" = "Datenspeicherung";
+
+// MARK: - Notifications
+"notif_habit_reminder" = "Zeit für %@";
+"notif_habit_body" = "Unterbreche deine Serie nicht! Erledige deine Gewohnheit jetzt.";
+"notif_evening_title" = "Tageszusammenfassung";
+"notif_evening_body" = "Du hast noch %d Gewohnheit(en) für heute. Weiter so!";
+"notif_evening_done" = "Alles erledigt! 🎉";
+"notif_evening_done_body" = "Du hast alle Gewohnheiten für heute erledigt. Super gemacht!";
+"notif_streak_title" = "🔥 Serien-Alarm!";
+"notif_streak_body" = "Du hast eine %d-Tage-Serie! Unterbreche sie heute nicht.";
+
+// MARK: - Export/Import
+"export_title" = "Daten exportieren";
+"export_format" = "Format";
+"export_json" = "JSON";
+"export_markdown" = "Markdown";
+"export_csv" = "CSV";
+"export_success" = "Export erfolgreich";
+"export_downloads" = "Deine Daten wurden in den Downloads-Ordner exportiert.";
+"import_title" = "Daten importieren";
+"import_success" = "Import erfolgreich";
+"import_count" = "%d Gewohnheiten und %d Journal-Einträge importiert.";
+
+// MARK: - Backup
+"backup_title" = "Backup";
+"backup_last" = "Letztes Backup";
+"backup_create" = "Backup erstellen";
+"backup_restore" = "Wiederherstellen";
+"backup_auto" = "Automatische Backups";
+
+// MARK: - Keyboard Shortcuts
+"shortcut_complete" = "Schnell abschließen";
+"shortcut_complete_all" = "Alle abschließen";
+"shortcut_new_habit" = "Neue Gewohnheit";
+"shortcut_new_journal" = "Neuer Journal-Eintrag";
+"shortcut_export" = "Exportieren";
+"shortcut_settings" = "Einstellungen";
+"shortcut_help" = "Tastaturkürzel-Hilfe";
+
+// MARK: - Errors
+"error_validation_empty_title" = "Titel darf nicht leer sein";
+"error_validation_empty_content" = "Inhalt darf nicht leer sein";
+"error_validation_invalid_date" = "Ungültiges Datumsformat";
+"error_validation_duplicate" = "Eine Gewohnheit mit diesem Namen existiert bereits";

@@ -1,0 +1,160 @@
+/* 
+  Localizable.strings
+  mindgrowee_mac
+
+  English localization (Base)
+*/
+
+// MARK: - General
+"app_name" = "MindGrowee";
+"ok" = "OK";
+"cancel" = "Cancel";
+"save" = "Save";
+"delete" = "Delete";
+"edit" = "Edit";
+"done" = "Done";
+"close" = "Close";
+"loading" = "Loading...";
+"error" = "Error";
+"success" = "Success";
+"warning" = "Warning";
+
+// MARK: - Habits
+"habits_title" = "Habits";
+"habits_today" = "Today's Habits";
+"habits_empty" = "No habits yet";
+"habits_create_first" = "Create First Habit";
+"habits_add" = "Add Habit";
+"habits_new" = "New Habit";
+"habits_edit" = "Edit Habit";
+"habits_completed" = "Completed";
+"habits_of_completed" = "%d of %d completed";
+"habits_streak" = "%d day streak";
+"habits_best_streak" = "Best streak: %d days";
+"habits_icon" = "Icon";
+"habits_color" = "Color";
+"habits_title_placeholder" = "Habit name";
+"habits_category" = "Category";
+"habits_no_category" = "No Category";
+"habits_filter_all" = "All";
+"habits_complete_all" = "Complete All";
+"habits_completed_count" = "%d completed";
+
+// MARK: - Journal
+"journal_title" = "Journal";
+"journal_new" = "New Entry";
+"journal_edit" = "Edit Entry";
+"journal_empty" = "No entries yet";
+"journal_write_first" = "Write First Entry";
+"journal_content_placeholder" = "How was your day?";
+"journal_mood" = "Mood";
+"journal_tags" = "Tags";
+"journal_tags_placeholder" = "Tags (comma separated)";
+"journal_search" = "Search entries...";
+"journal_results" = "%d results";
+
+// MARK: - Statistics
+"stats_title" = "Statistics";
+"stats_total_habits" = "Total Habits";
+"stats_today_progress" = "Today's Progress";
+"stats_current_streak" = "Current Streak";
+"stats_best_streak" = "Best Streak";
+"stats_journal_entries" = "Journal Entries";
+"stats_avg_mood" = "Avg Mood";
+"stats_week" = "Week";
+"stats_month" = "Month";
+"stats_year" = "Year";
+"stats_all_time" = "All Time";
+"stats_days_tracked" = "Days Tracked";
+"stats_completion_rate" = "Completion Rate";
+
+// MARK: - Categories
+"category_health" = "Health";
+"category_fitness" = "Fitness";
+"category_productivity" = "Productivity";
+"category_learning" = "Learning";
+"category_mindfulness" = "Mindfulness";
+"category_social" = "Social";
+"category_creative" = "Creative";
+"category_finance" = "Finance";
+
+// MARK: - Focus Modes
+"focus_title" = "Focus Modes";
+"focus_new" = "New Focus Mode";
+"focus_all_habits" = "All Habits";
+"focus_select" = "Select Focus";
+"focus_habits_count" = "%d habits";
+
+// MARK: - Streak Freezes
+"freeze_title" = "Streak Freezes";
+"freeze_available" = "%d of 3 available";
+"freeze_use" = "Use Freeze";
+"freeze_use_today" = "Use Freeze Today";
+"freeze_description" = "Use a freeze to protect your streak when you can't complete your habits. You regenerate 1 freeze every 7 days.";
+"freeze_history" = "History";
+
+// MARK: - Settings
+"settings_title" = "Settings";
+"settings_general" = "General";
+"settings_appearance" = "Appearance";
+"settings_goals" = "Goals";
+"settings_data" = "Data";
+"settings_about" = "About";
+"settings_launch_login" = "Launch at Login";
+"settings_show_menubar" = "Show in Menu Bar";
+"settings_show_dock" = "Show Dock Icon";
+"settings_sound" = "Sound Effects";
+"settings_dark_mode" = "Dark Mode";
+"settings_system_appearance" = "Use System Appearance";
+"settings_accent_color" = "Accent Color";
+"settings_streak_goal" = "Streak Goal";
+"settings_import" = "Import Data...";
+"settings_export" = "Export Data...";
+"settings_reset_today" = "Reset Today's Progress";
+"settings_clear_all" = "Clear All Data";
+"settings_version" = "Version";
+"settings_data_storage" = "Data Storage";
+
+// MARK: - Notifications
+"notif_habit_reminder" = "Time for %@";
+"notif_habit_body" = "Don't break your streak! Complete your habit now.";
+"notif_evening_title" = "Daily Summary";
+"notif_evening_body" = "You have %d habit(s) remaining today. Keep going!";
+"notif_evening_done" = "All done! 🎉";
+"notif_evening_done_body" = "You completed all your habits today. Great job!";
+"notif_streak_title" = "🔥 Streak Alert!";
+"notif_streak_body" = "You're on a %d-day streak! Don't break it today.";
+
+// MARK: - Export/Import
+"export_title" = "Export Data";
+"export_format" = "Format";
+"export_json" = "JSON";
+"export_markdown" = "Markdown";
+"export_csv" = "CSV";
+"export_success" = "Export Successful";
+"export_downloads" = "Your data has been exported to the Downloads folder.";
+"import_title" = "Import Data";
+"import_success" = "Import Successful";
+"import_count" = "Successfully imported %d habits and %d journal entries.";
+
+// MARK: - Backup
+"backup_title" = "Backup";
+"backup_last" = "Last Backup";
+"backup_create" = "Create Backup";
+"backup_restore" = "Restore";
+"backup_auto" = "Automatic Backups";
+
+// MARK: - Keyboard Shortcuts
+"shortcut_complete" = "Quick Complete";
+"shortcut_complete_all" = "Complete All";
+"shortcut_new_habit" = "New Habit";
+"shortcut_new_journal" = "New Journal Entry";
+"shortcut_export" = "Export";
+"shortcut_settings" = "Settings";
+"shortcut_help" = "Keyboard Shortcuts Help";
+
+// MARK: - Errors
+"error_validation_empty_title" = "Habit title cannot be empty";
+"error_validation_empty_content" = "Journal entry cannot be empty";
+"error_validation_invalid_date" = "Invalid date format";
+"error_validation_duplicate" = "A habit with this name already exists";
