@@ -1,6 +1,14 @@
 # mindgrowee_mac
 
-Native macOS Habit Tracker & Journal App built with SwiftUI.
+[![macOS](https://img.shields.io/badge/macOS-14.0+-blue)](https://developer.apple.com/macos/)
+[![Swift](https://img.shields.io/badge/Swift-5.9-orange)](https://swift.org)
+[![SwiftUI](https://img.shields.io/badge/SwiftUI-3.0-green)](https://developer.apple.com/xcode/swiftui/)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/LennardVW/mindgrowee_mac/ci.yml?branch=main)](https://github.com/LennardVW/mindgrowee_mac/actions)
+
+Native macOS Habit Tracker & Journal App built with SwiftUI. Track habits, journal your thoughts, and build better routines - all stored locally on your Mac.
+
+![MindGrowee Screenshot](Assets/screenshot.png)
 
 ## Features
 
@@ -205,4 +213,22 @@ Tests cover:
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with [SwiftUI](https://developer.apple.com/xcode/swiftui/) and [SwiftData](https://developer.apple.com/documentation/swiftdata)
+- Inspired by the need for a simple, private habit tracker on macOS
+- Thanks to the Swift open-source community for documentation and examples
+
+## Support
+
+- Report issues on [GitHub Issues](https://github.com/LennardVW/mindgrowee_mac/issues)
+- Follow development on the [develop branch](https://github.com/LennardVW/mindgrowee_mac/tree/develop)
+- Read the [Contributing Guide](CONTRIBUTING.md) to get involved
+
+---
+
+<p align="center">
+  Built with ❤️ for the macOS community
+</p>
