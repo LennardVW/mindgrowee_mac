@@ -1,23 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Streak Freeze Model
-
-@Model
-class StreakFreeze {
-    @Attribute(.unique) var id: UUID
-    var date: Date
-    var reason: String
-    var isUsed: Bool
-    
-    init(date: Date, reason: String = "") {
-        self.id = UUID()
-        self.date = date
-        self.reason = reason
-        self.isUsed = false
-    }
-}
-
 // MARK: - Streak Freeze Manager
 
 class StreakFreezeManager: ObservableObject {

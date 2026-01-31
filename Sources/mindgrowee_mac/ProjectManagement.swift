@@ -1,35 +1,9 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Project Model
+// MARK: - Project Extension
 
-@Model
-class Project {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var projectDescription: String
-    var color: String
-    var icon: String
-    var createdAt: Date
-    var deadline: Date?
-    var isCompleted: Bool
-    var completedAt: Date?
-    
-    var habits: [Habit]?
-    var milestones: [Milestone]?
-    
-    init(name: String, description: String = "", color: String = "blue", icon: String = "folder", deadline: Date? = nil) {
-        self.id = UUID()
-        self.name = name
-        self.projectDescription = description
-        self.color = color
-        self.icon = icon
-        self.createdAt = Date()
-        self.deadline = deadline
-        self.isCompleted = false
-        self.completedAt = nil
-    }
-    
+extension Project {
     var completionPercentage: Double {
         guard let habits = habits, !habits.isEmpty else { return 0 }
         let completed = habits.filter { $0.isCompletedToday }.count
@@ -37,7 +11,6 @@ class Project {
     }
     
     var overallStreak: Int {
-        // Calculate based on all habits in project
         let streaks = habits?.map { $0.currentStreak } ?? []
         return streaks.min() ?? 0
     }
@@ -45,31 +18,6 @@ class Project {
     var daysUntilDeadline: Int? {
         guard let deadline = deadline else { return nil }
         return Calendar.current.dateComponents([.day], from: Date(), to: deadline).day
-    }
-}
-
-// MARK: - Milestone Model
-
-@Model
-class Milestone {
-    @Attribute(.unique) var id: UUID
-    var title: String
-    var milestoneDescription: String
-    var targetDate: Date?
-    var isCompleted: Bool
-    var completedAt: Date?
-    var order: Int
-    
-    var project: Project?
-    
-    init(title: String, description: String = "", targetDate: Date? = nil, order: Int = 0) {
-        self.id = UUID()
-        self.title = title
-        self.milestoneDescription = description
-        self.targetDate = targetDate
-        self.isCompleted = false
-        self.completedAt = nil
-        self.order = order
     }
 }
 

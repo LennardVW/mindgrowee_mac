@@ -1,29 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Habit Category
-
-@Model
-class HabitCategory {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var icon: String
-    var color: String
-    var sortOrder: Int
-    var createdAt: Date
-    
-    var habits: [Habit]?
-    
-    init(name: String, icon: String, color: String, sortOrder: Int = 0) {
-        self.id = UUID()
-        self.name = name
-        self.icon = icon
-        self.color = color
-        self.sortOrder = sortOrder
-        self.createdAt = Date()
-    }
-}
-
 // MARK: - Habit Extension
 
 extension Habit {

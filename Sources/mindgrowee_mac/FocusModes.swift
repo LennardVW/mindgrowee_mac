@@ -1,29 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Focus Mode
-
-@Model
-class FocusMode {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var icon: String
-    var color: String
-    var habitIds: [UUID] // IDs of habits in this focus mode
-    var isActive: Bool
-    var createdAt: Date
-    
-    init(name: String, icon: String, color: String, habitIds: [UUID] = []) {
-        self.id = UUID()
-        self.name = name
-        self.icon = icon
-        self.color = color
-        self.habitIds = habitIds
-        self.isActive = false
-        self.createdAt = Date()
-    }
-}
-
 // MARK: - Focus Mode Manager
 
 class FocusModeManager: ObservableObject {

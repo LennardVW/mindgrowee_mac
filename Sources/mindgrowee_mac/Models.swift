@@ -62,12 +62,14 @@ class JournalEntry {
 class StreakFreeze {
     @Attribute(.unique) var id: UUID
     var date: Date
+    var reason: String
     var isUsed: Bool
     var usedForHabitId: UUID?
     
-    init(date: Date) {
+    init(date: Date, reason: String = "") {
         self.id = UUID()
         self.date = date
+        self.reason = reason
         self.isUsed = false
         self.usedForHabitId = nil
     }
@@ -97,14 +99,16 @@ class HabitCategory {
 class FocusMode {
     @Attribute(.unique) var id: UUID
     var name: String
+    var icon: String
     var color: String
     var habitIds: [UUID]
     var isActive: Bool
     var createdAt: Date
     
-    init(name: String, color: String, habitIds: [UUID] = []) {
+    init(name: String, icon: String = "target", color: String, habitIds: [UUID] = []) {
         self.id = UUID()
         self.name = name
+        self.icon = icon
         self.color = color
         self.habitIds = habitIds
         self.isActive = false
@@ -158,6 +162,26 @@ class Milestone {
         self.isCompleted = false
         self.completedAt = nil
         self.order = order
+    }
+}
+
+// MARK: - Project Computed Properties
+
+extension Project {
+    var completionPercentage: Double {
+        guard let habits = habits, !habits.isEmpty else { return 0 }
+        let completed = habits.filter { $0.isCompletedToday }.count
+        return Double(completed) / Double(habits.count)
+    }
+    
+    var overallStreak: Int {
+        let streaks = habits?.map { $0.currentStreak } ?? []
+        return streaks.min() ?? 0
+    }
+    
+    var daysUntilDeadline: Int? {
+        guard let deadline = deadline else { return nil }
+        return Calendar.current.dateComponents([.day], from: Date(), to: deadline).day
     }
 }
 
