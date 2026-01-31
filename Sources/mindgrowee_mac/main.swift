@@ -1,20 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - App Entry Point
-
-@main
-struct MindGroweeMacApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self])
-    }
-}
-
-// MARK: - Legacy Content
-
 
 
 // MARK: - Models

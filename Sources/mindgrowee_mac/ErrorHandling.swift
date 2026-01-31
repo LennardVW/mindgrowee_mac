@@ -234,8 +234,8 @@ struct SafeState<T> {
     
     var projectedValue: Binding<T> {
         Binding(
-            get: { wrappedValue },
-            set: { wrappedValue = $0 }
+            get: { storage },
+            set: { storage = $0 }
         )
     }
     

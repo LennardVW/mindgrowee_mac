@@ -74,7 +74,7 @@ class Localization {
     static let shared = Localization()
     
     var currentLanguage: String {
-        return Locale.current.language.languageIdentifier ?? "en"
+        return Locale.current.languageCode ?? "en"
     }
     
     var isGerman: Bool {

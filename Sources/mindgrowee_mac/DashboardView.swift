@@ -217,6 +217,15 @@ struct StatCard: View {
     let color: Color
     let progress: Double?
     
+    init(title: String, value: String, subtitle: String = "", icon: String, color: Color = .blue, progress: Double? = nil) {
+        self.title = title
+        self.value = value
+        self.subtitle = subtitle
+        self.icon = icon
+        self.color = color
+        self.progress = progress
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
             HStack {

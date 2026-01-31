@@ -18,7 +18,7 @@ class SpotlightIndexManager {
         var items: [CSSearchableItem] = []
         
         for habit in habits {
-            let attributeSet = CSSearchableItemAttributeSet(itemContentType: kUTTypeData as String)
+            let attributeSet = CSSearchableItemAttributeSet(contentType: .data)
             attributeSet.title = habit.title
             attributeSet.contentDescription = "Habit - Track your daily progress"
             attributeSet.keywords = ["habit", "tracking", "daily", habit.title]
@@ -45,11 +45,10 @@ class SpotlightIndexManager {
         var items: [CSSearchableItem] = []
         
         for entry in entries {
-            let attributeSet = CSSearchableItemAttributeSet(itemContentType: kUTTypeText as String)
+            let attributeSet = CSSearchableItemAttributeSet(contentType: .text)
             attributeSet.title = entry.date.formatted(date: .long, time: .shortened)
             attributeSet.contentDescription = String(entry.content.prefix(100))
             attributeSet.keywords = ["journal", "entry", "mood"] + entry.tags
-            attributeSet.creationDate = entry.date
             attributeSet.contentModificationDate = entry.date
             
             let item = CSSearchableItem(

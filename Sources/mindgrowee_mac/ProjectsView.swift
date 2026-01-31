@@ -69,8 +69,8 @@ struct ProjectRow: View {
                     Text(project.name)
                         .font(.headline)
                     
-                    if !project.description.isEmpty {
-                        Text(project.description)
+                    if !project.projectDescription.isEmpty {
+                        Text(project.projectDescription)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
