@@ -395,6 +395,7 @@ struct DashboardProjectRow: View {
 
 struct WeeklyProgressChart: View {
     let habits: [Habit]
+    private let maxBarHeight: CGFloat = 80
     
     var body: some View {
         HStack(spacing: 8) {
@@ -402,14 +403,23 @@ struct WeeklyProgressChart: View {
                 let date = Calendar.current.date(byAdding: .day, value: -(6-dayOffset), to: startOfDay(Date()))!
                 let rate = completionRate(for: date)
                 
-                VStack(spacing: 4) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(rate >= 0.5 ? Color.green : (rate > 0 ? Color.orange : Color.gray.opacity(0.3)))
-                        .frame(width: 30, height: max(4, rate * 80))
+                VStack(spacing: 8) {
+                    // Fixed height container for bars
+                    ZStack(alignment: .bottom) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.gray.opacity(0.1))
+                            .frame(width: 30, height: maxBarHeight)
+                        
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(rate >= 0.5 ? Color.green : (rate > 0 ? Color.orange : Color.clear))
+                            .frame(width: 30, height: max(4, rate * maxBarHeight))
+                    }
                     
+                    // Day label always at bottom
                     Text(dayLetter(for: date))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .frame(width: 30)
                 }
             }
         }
