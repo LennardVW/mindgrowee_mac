@@ -125,6 +125,7 @@ class EncryptedJournalEntry {
 // MARK: - Model Migration Helper
 
 /// Helper to migrate from unencrypted to encrypted models
+@MainActor
 class ModelEncryptionMigrator {
     static let shared = ModelEncryptionMigrator()
     
