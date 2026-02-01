@@ -176,14 +176,28 @@ struct NewProjectView: View {
     private let icons = ["folder", "star", "heart", "bolt", "flame", "target", "flag", "checkmark.circle"]
     
     var body: some View {
-        NavigationView {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Button("Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Spacer()
+                Text("New Project")
+                    .font(.headline)
+                Spacer()
+                Button("Create") { createProject() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            .padding()
+
             Form {
                 Section("Project Details") {
                     TextField("Name", text: $name)
                     TextField("Description", text: $description, axis: .vertical)
                         .lineLimit(3...6)
                 }
-                
+
                 Section("Appearance") {
                     // Icon picker
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -201,7 +215,7 @@ struct NewProjectView: View {
                             }
                         }
                     }
-                    
+
                     // Color picker
                     HStack(spacing: 12) {
                         ForEach(colors, id: \.self) { color in
@@ -222,15 +236,15 @@ struct NewProjectView: View {
                         }
                     }
                 }
-                
+
                 Section("Deadline") {
                     Toggle("Set Deadline", isOn: $hasDeadline)
-                    
+
                     if hasDeadline {
                         DatePicker("Deadline", selection: $deadline, displayedComponents: .date)
                     }
                 }
-                
+
                 Section("Templates") {
                     ForEach(ProjectTemplate.templates, id: \.name) { template in
                         Button(action: {
@@ -261,16 +275,7 @@ struct NewProjectView: View {
                     }
                 }
             }
-            .navigationTitle("New Project")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") { createProject() }
-                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
-                }
-            }
+            .formStyle(.grouped)
         }
         .frame(width: 500, height: 600)
     }
@@ -340,9 +345,19 @@ struct ProjectDetailView: View {
     let project: Project
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
-        NavigationView {
+        VStack(spacing: 0) {
+            HStack {
+                Button("Close") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Spacer()
+                Text(project.name)
+                    .font(.headline)
+                Spacer()
+            }
+            .padding()
+
             List {
                 // Progress section
                 Section {
@@ -352,11 +367,11 @@ struct ProjectDetailView: View {
                             color: colorFor(project.color)
                         )
                         .frame(width: 120, height: 120)
-                        
+
                         Text("\(Int(project.completionPercentage * 100))% Complete")
                             .font(.title2)
                             .fontWeight(.bold)
-                        
+
                         if let days = project.daysUntilDeadline {
                             if days > 0 {
                                 Text("\(days) days until deadline")
@@ -375,7 +390,7 @@ struct ProjectDetailView: View {
                     .padding(.vertical, 20)
                     .frame(maxWidth: .infinity)
                 }
-                
+
                 // Habits section
                 if let habits = project.habits, !habits.isEmpty {
                     Section("Habits") {
@@ -384,7 +399,7 @@ struct ProjectDetailView: View {
                         }
                     }
                 }
-                
+
                 // Milestones section
                 if let milestones = project.milestones, !milestones.isEmpty {
                     Section("Milestones") {
@@ -394,12 +409,7 @@ struct ProjectDetailView: View {
                     }
                 }
             }
-            .navigationTitle(project.name)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
-                }
-            }
+            .listStyle(.inset)
         }
         .frame(width: 500, height: 600)
     }

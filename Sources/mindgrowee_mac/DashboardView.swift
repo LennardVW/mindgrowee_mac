@@ -33,6 +33,7 @@ struct DashboardView: View {
                             Text(range.rawValue).tag(range)
                         }
                     }
+                    .labelsHidden()
                     .pickerStyle(.segmented)
                     .frame(width: 200)
                 }
@@ -200,8 +201,7 @@ struct DashboardSection<Content: View>: View {
             
             content
                 .padding()
-                .background(Color.gray.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .glassEffect(.regular, in: .rect(cornerRadius: 12))
                 .padding(.horizontal)
         }
     }
@@ -253,8 +253,7 @@ struct StatCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding()
-        .background(Color.gray.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
     }
 }
 

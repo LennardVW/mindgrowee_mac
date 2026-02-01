@@ -130,7 +130,7 @@ class KeyboardNavigation: ObservableObject {
 
 // MARK: - Haptic Feedback
 
-import AppKit
+import SwiftUI
 
 @MainActor
 class HapticManager {

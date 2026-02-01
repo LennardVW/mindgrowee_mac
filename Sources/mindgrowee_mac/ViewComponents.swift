@@ -14,8 +14,7 @@ struct HabitDragPreview: View {
                 .fontWeight(.medium)
         }
         .padding()
-        .background(Color.gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .glassEffect(.regular, in: .rect(cornerRadius: 8))
     }
     
     private func colorFor(_ colorName: String) -> Color {

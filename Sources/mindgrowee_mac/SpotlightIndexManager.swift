@@ -1,7 +1,6 @@
+import SwiftUI
 import CoreSpotlight
-import CoreServices
 import SwiftData
-import AppKit
 
 // MARK: - Spotlight Index Manager
 

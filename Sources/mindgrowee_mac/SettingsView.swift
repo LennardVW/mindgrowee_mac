@@ -103,9 +103,10 @@ struct SettingsView: View {
                     }
                     
                     Button("Export Data...") {
-                        // This would trigger export from main view
-                        NotificationCenter.default.post(name: .showExport, object: nil)
                         dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            NotificationCenter.default.post(name: .showExport, object: nil)
+                        }
                     }
                     
                     Button("Reset Today's Progress") {
