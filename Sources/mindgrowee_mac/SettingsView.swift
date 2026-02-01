@@ -196,7 +196,7 @@ struct SettingsView: View {
                 }
             }
         } catch {
-            print("Failed to reset progress: \(error)")
+            Logger.shared.error("Failed to reset progress", error: error)
         }
     }
     
@@ -209,7 +209,7 @@ struct SettingsView: View {
                 modelContext.delete(habit)
             }
         } catch {
-            print("Failed to clear habits: \(error)")
+            Logger.shared.error("Failed to clear habits", error: error)
         }
         
         // Delete all journal entries
@@ -220,7 +220,7 @@ struct SettingsView: View {
                 modelContext.delete(entry)
             }
         } catch {
-            print("Failed to clear journal entries: \(error)")
+            Logger.shared.error("Failed to clear journal entries", error: error)
         }
     }
 }

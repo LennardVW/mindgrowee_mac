@@ -20,7 +20,7 @@ class NotificationManager: ObservableObject {
             }
             
             if let error = error {
-                print("Notification authorization error: \(error)")
+                Logger.shared.error("Notification authorization failed", error: error)
             }
         }
     }
@@ -58,7 +58,7 @@ class NotificationManager: ObservableObject {
         
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Failed to schedule notification: \(error)")
+                Logger.shared.error("Failed to schedule notification", error: error)
             }
         }
     }

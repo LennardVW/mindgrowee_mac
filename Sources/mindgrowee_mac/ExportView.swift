@@ -155,7 +155,7 @@ struct ExportView: View {
                 try content.write(to: fileURL, atomically: true, encoding: .utf8)
                 showSuccess = true
             } catch {
-                print("Failed to export: \(error)")
+                Logger.shared.error("Failed to export", error: error)
             }
         }
         

@@ -189,7 +189,7 @@ struct CSVImportView: View {
                     importedCount += 1
                 }
             } catch {
-                print("Failed to import line: \(error)")
+                Logger.shared.error("Failed to import CSV line", error: error)
             }
         }
         

@@ -49,7 +49,7 @@ class CategoryManager: ObservableObject {
                 context.insert(newCategory)
             }
         } catch {
-            print("Failed to create default categories: \(error)")
+            Logger.shared.error("Failed to create default categories", error: error)
         }
     }
 }

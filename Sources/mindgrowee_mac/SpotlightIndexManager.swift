@@ -34,7 +34,7 @@ class SpotlightIndexManager {
         
         CSSearchableIndex.default().indexSearchableItems(items) { error in
             if let error = error {
-                print("Failed to index habits: \(error)")
+                Logger.shared.error("Failed to index habits", error: error)
             }
         }
     }
@@ -61,7 +61,7 @@ class SpotlightIndexManager {
         
         CSSearchableIndex.default().indexSearchableItems(items) { error in
             if let error = error {
-                print("Failed to index journal entries: \(error)")
+                Logger.shared.error("Failed to index journal entries", error: error)
             }
         }
     }
