@@ -14,6 +14,13 @@ Native macOS Habit Tracker, Journal & Project Management App built with SwiftUI.
 
 ## Features
 
+### 🔐 End-to-End Encryption
+- **Password-protected data encryption** using AES-256-GCM
+- Each user has their own unique encryption key
+- Secure key storage in macOS Keychain
+- **Encrypted export/import** with password protection
+- Your data stays private, even on your local machine
+
 ### 📊 Dashboard
 - At-a-glance overview of all your data
 - Quick stats: habits, streaks, journal entries, projects
