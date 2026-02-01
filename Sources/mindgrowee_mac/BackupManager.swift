@@ -219,6 +219,8 @@ enum BackupError: Error {
     case directoryNotFound
     case invalidData
     case backupFailed
+    case invalidBackupFormat
+    case unsupportedVersion
 }
 
 extension BackupError: LocalizedError {
@@ -230,6 +232,10 @@ extension BackupError: LocalizedError {
             return "Backup data is invalid or corrupted"
         case .backupFailed:
             return "Failed to create backup"
+        case .invalidBackupFormat:
+            return "Invalid backup file format"
+        case .unsupportedVersion:
+            return "Unsupported backup version"
         }
     }
 }

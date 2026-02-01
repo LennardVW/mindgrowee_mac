@@ -33,6 +33,8 @@ class EncryptedJournalEntry {
     var encryptedTags: Data
     var nonce: Data
     var tag: Data
+    var tagsNonce: Data?
+    var tagsTag: Data?
     var mood: Int // Not encrypted for filtering
     var date: Date // Not encrypted for sorting
     
@@ -55,14 +57,14 @@ class EncryptedJournalEntry {
         // Encrypt content
         let contentBox = try AES.GCM.seal(contentData, using: key)
         self.encryptedContent = contentBox.ciphertext
-        
-        // Encrypt tags
-        let tagsBox = try AES.GCM.seal(tagsData, using: key)
-        self.encryptedTags = tagsBox.ciphertext
-        
-        // Store nonce and tag (use content's for both, or separate)
         self.nonce = Data(contentBox.nonce)
         self.tag = contentBox.tag
+
+        // Encrypt tags (separate nonce/tag)
+        let tagsBox = try AES.GCM.seal(tagsData, using: key)
+        self.encryptedTags = tagsBox.ciphertext
+        self.tagsNonce = Data(tagsBox.nonce)
+        self.tagsTag = tagsBox.tag
     }
     
     @MainActor
@@ -86,14 +88,17 @@ class EncryptedJournalEntry {
         guard let key = EncryptionManager.shared.masterKey else {
             throw EncryptionError.notInitialized
         }
-        
-        // For simplicity, using same nonce/tag - in production use separate
+
+        // Use tags-specific nonce/tag, fall back to content's for legacy entries
+        let nonceData = tagsNonce ?? nonce
+        let tagData = tagsTag ?? tag
+
         let sealedBox = try AES.GCM.SealedBox(
-            nonce: AES.GCM.Nonce(data: nonce),
+            nonce: AES.GCM.Nonce(data: nonceData),
             ciphertext: encryptedTags,
-            tag: tag
+            tag: tagData
         )
-        
+
         let decryptedData = try AES.GCM.open(sealedBox, using: key)
         return try JSONDecoder().decode([String].self, from: decryptedData)
     }
@@ -111,15 +116,15 @@ class EncryptedJournalEntry {
         let contentData = Data(content.utf8)
         let contentBox = try AES.GCM.seal(contentData, using: key)
         self.encryptedContent = contentBox.ciphertext
-        
-        // Re-encrypt tags
+        self.nonce = Data(contentBox.nonce)
+        self.tag = contentBox.tag
+
+        // Re-encrypt tags (separate nonce/tag)
         let tagsData = try JSONEncoder().encode(tags)
         let tagsBox = try AES.GCM.seal(tagsData, using: key)
         self.encryptedTags = tagsBox.ciphertext
-        
-        // Update nonce and tag
-        self.nonce = Data(contentBox.nonce)
-        self.tag = contentBox.tag
+        self.tagsNonce = Data(tagsBox.nonce)
+        self.tagsTag = tagsBox.tag
     }
 }
 

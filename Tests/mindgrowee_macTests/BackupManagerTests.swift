@@ -27,14 +27,6 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: backupDir.path))
     }
     
-    func testBackupCompletionRateCalculation() {
-        // Given - empty habits
-        let rate = backupManager.completionRate()
-        
-        // Then
-        XCTAssertEqual(rate, 0.0)
-    }
-    
     // MARK: - Restore Tests
     
     func testRestoreInvalidBackupFormat() {

@@ -1,7 +1,8 @@
-import SwiftUI
-import SwiftData
+import CommonCrypto
 import CryptoKit
 import Security
+import SwiftData
+import SwiftUI
 
 // MARK: - Encrypted Export Import View
 
@@ -227,7 +228,7 @@ struct EncryptedExportImportView: View {
                         "icon": habit.icon,
                         "color": habit.color,
                         "createdAt": ISO8601DateFormatter().string(from: habit.createdAt),
-                        "categoryId": habit.categoryId?.uuidString ?? NSNull()
+                        "categoryId": habit.categoryId?.uuidString as Any? ?? NSNull()
                     ]
                     let data = try JSONSerialization.data(withJSONObject: habitData)
                     let item = ExportItem(
@@ -265,9 +266,9 @@ struct EncryptedExportImportView: View {
                         "color": project.color,
                         "icon": project.icon,
                         "createdAt": ISO8601DateFormatter().string(from: project.createdAt),
-                        "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull(),
+                        "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } as Any? ?? NSNull(),
                         "isCompleted": project.isCompleted,
-                        "completedAt": project.completedAt.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull()
+                        "completedAt": project.completedAt.map { ISO8601DateFormatter().string(from: $0) } as Any? ?? NSNull()
                     ]
                     let data = try JSONSerialization.data(withJSONObject: projectData)
                     let item = ExportItem(
@@ -315,26 +316,21 @@ struct EncryptedExportImportView: View {
     }
     
     private func encryptExportData(_ data: Data, password: String) throws -> Data {
-        // Derive key from password
-        let passwordData = Data(password.utf8)
+        // Derive key from password using PBKDF2
         let salt = Data.random(count: 32)
-        let key = HKDF<SHA256>.deriveKey(
-            inputKeyMaterial: .init(data: passwordData),
-            salt: salt,
-            info: Data("mindgrowee_export".utf8),
-            outputByteCount: 32
-        )
-        
+        let key = EncryptionManager.deriveExportKey(from: password, salt: salt)
+
         // Encrypt data
         let sealedBox = try AES.GCM.seal(data, using: key)
-        
-        // Create export format: salt + nonce + ciphertext + tag
+
+        // Export format: version(1) + salt(32) + nonce(12) + ciphertext + tag(16)
         var exportData = Data()
+        exportData.append(2) // KDF version: 2 = PBKDF2
         exportData.append(salt)
         exportData.append(Data(sealedBox.nonce))
         exportData.append(sealedBox.ciphertext)
         exportData.append(sealedBox.tag)
-        
+
         return exportData
     }
     
@@ -478,29 +474,42 @@ struct EncryptedExportImportView: View {
     }
     
     private func decryptImportData(_ data: Data, password: String) throws -> Data {
-        // Parse format: salt (32) + nonce (12) + ciphertext + tag (16)
-        guard data.count > 60 else {
+        guard data.count > 61 else {
             throw EncryptionError.decryptionFailed
         }
-        
-        let salt = data.prefix(32)
-        let nonceData = data.dropFirst(32).prefix(12)
-        let tag = data.suffix(16)
-        let ciphertext = data.dropFirst(44).dropLast(16)
-        
-        // Derive key from password
-        let passwordData = Data(password.utf8)
-        let key = HKDF<SHA256>.deriveKey(
-            inputKeyMaterial: .init(data: passwordData),
-            salt: Data(salt),
-            info: Data("mindgrowee_export".utf8),
-            outputByteCount: 32
-        )
-        
+
+        // Detect format version by first byte
+        let firstByte = data[data.startIndex]
+        let key: SymmetricKey
+        let salt: Data
+        let nonceData: Data
+        let ciphertext: Data
+        let tag: Data
+
+        if firstByte == 2 {
+            // v2 format: version(1) + salt(32) + nonce(12) + ciphertext + tag(16)
+            salt = Data(data.dropFirst(1).prefix(32))
+            nonceData = Data(data.dropFirst(33).prefix(12))
+            tag = Data(data.suffix(16))
+            ciphertext = Data(data.dropFirst(45).dropLast(16))
+            key = EncryptionManager.deriveExportKey(from: password, salt: salt)
+        } else {
+            // v1 format (legacy): salt(32) + nonce(12) + ciphertext + tag(16)
+            // First byte is part of the salt, not a version marker
+            guard data.count > 60 else {
+                throw EncryptionError.decryptionFailed
+            }
+            salt = Data(data.prefix(32))
+            nonceData = Data(data.dropFirst(32).prefix(12))
+            tag = Data(data.suffix(16))
+            ciphertext = Data(data.dropFirst(44).dropLast(16))
+            key = EncryptionManager.deriveExportKeyHKDF(from: password, salt: salt)
+        }
+
         // Decrypt
-        let nonce = try AES.GCM.Nonce(data: Data(nonceData))
-        let sealedBox = try AES.GCM.SealedBox(nonce: nonce, ciphertext: Data(ciphertext), tag: Data(tag))
-        
+        let nonce = try AES.GCM.Nonce(data: nonceData)
+        let sealedBox = try AES.GCM.SealedBox(nonce: nonce, ciphertext: ciphertext, tag: tag)
+
         return try AES.GCM.open(sealedBox, using: key)
     }
 }

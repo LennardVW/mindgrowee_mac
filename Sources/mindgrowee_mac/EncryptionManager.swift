@@ -1,3 +1,4 @@
+import CommonCrypto
 import CryptoKit
 import Foundation
 import Security
@@ -26,7 +27,12 @@ class EncryptionManager: ObservableObject {
     var masterKey: SymmetricKey?
     private let keyIdentifier = "com.mindgrowee.encryption.master"
     private let saltIdentifier = "com.mindgrowee.encryption.salt"
-    
+    private let versionIdentifier = "com.mindgrowee.encryption.version"
+
+    // KDF version: 1 = HKDF (legacy), 2 = PBKDF2
+    private static let currentKDFVersion: UInt8 = 2
+    private static let pbkdf2Iterations: UInt32 = 600_000
+
     private init() {}
     
     // MARK: - Setup
@@ -36,25 +42,28 @@ class EncryptionManager: ObservableObject {
     func setupEncryption(password: String) throws {
         // Generate random salt
         let salt = Data.random(count: 32)
-        
-        // Derive master key from password
-        let key = deriveKey(from: password, salt: salt)
-        
+
+        // Derive master key from password using PBKDF2 (v2)
+        let key = deriveKeyPBKDF2(from: password, salt: salt)
+
         // Store salt in keychain
         try storeInKeychain(data: salt, identifier: saltIdentifier)
-        
+
+        // Store KDF version
+        try storeInKeychain(data: Data([Self.currentKDFVersion]), identifier: versionIdentifier)
+
         // Generate and encrypt data encryption key (DEK)
         let dek = SymmetricKey(size: .bits256)
         let encryptedDEK = try encryptDEK(dek, with: key)
-        
+
         // Store encrypted DEK
         try storeInKeychain(data: encryptedDEK, identifier: keyIdentifier)
-        
+
         // Set master key
         masterKey = key
         isInitialized = true
         hasMasterKey = true
-        
+
         Logger.shared.info("Encryption initialized successfully")
     }
     
@@ -63,21 +72,39 @@ class EncryptionManager: ObservableObject {
         guard let salt = loadFromKeychain(identifier: saltIdentifier) else {
             throw EncryptionError.notInitialized
         }
-        
-        let key = deriveKey(from: password, salt: salt)
-        
+
+        // Determine KDF version (default to 1 for legacy setups)
+        let version: UInt8
+        if let versionData = loadFromKeychain(identifier: versionIdentifier), let v = versionData.first {
+            version = v
+        } else {
+            version = 1 // Legacy HKDF
+        }
+
+        let key: SymmetricKey
+        if version >= 2 {
+            key = deriveKeyPBKDF2(from: password, salt: salt)
+        } else {
+            key = deriveKeyHKDF(from: password, salt: salt)
+        }
+
         // Verify key by trying to load DEK
         guard let encryptedDEK = loadFromKeychain(identifier: keyIdentifier) else {
             throw EncryptionError.invalidKey
         }
-        
+
         // Try to decrypt (will fail if wrong password)
         _ = try decryptDEK(encryptedDEK, with: key)
-        
+
         masterKey = key
         isInitialized = true
         hasMasterKey = true
-        
+
+        // Migrate from v1 to v2 if needed
+        if version < Self.currentKDFVersion {
+            try migrateKDF(password: password, salt: salt, currentKey: key)
+        }
+
         Logger.shared.info("Encryption unlocked successfully")
     }
     
@@ -88,20 +115,113 @@ class EncryptionManager: ObservableObject {
     }
     
     // MARK: - Key Derivation
-    
-    /// Derive encryption key from password using HKDF
-    private func deriveKey(from password: String, salt: Data) -> SymmetricKey {
+
+    /// Derive encryption key from password using PBKDF2 (v2, secure for passwords)
+    private func deriveKeyPBKDF2(from password: String, salt: Data) -> SymmetricKey {
         let passwordData = Data(password.utf8)
-        
-        // Use HKDF for key derivation
-        let derivedKey = HKDF<SHA256>.deriveKey(
+        var derivedKeyData = Data(repeating: 0, count: 32)
+
+        let result = derivedKeyData.withUnsafeMutableBytes { derivedKeyBytes in
+            passwordData.withUnsafeBytes { passwordBytes in
+                salt.withUnsafeBytes { saltBytes in
+                    CCKeyDerivationPBKDF(
+                        CCPBKDFAlgorithm(kCCPBKDF2),
+                        passwordBytes.baseAddress?.assumingMemoryBound(to: Int8.self),
+                        passwordData.count,
+                        saltBytes.baseAddress?.assumingMemoryBound(to: UInt8.self),
+                        salt.count,
+                        CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+                        Self.pbkdf2Iterations,
+                        derivedKeyBytes.baseAddress?.assumingMemoryBound(to: UInt8.self),
+                        32
+                    )
+                }
+            }
+        }
+
+        guard result == kCCSuccess else {
+            fatalError("PBKDF2 key derivation failed")
+        }
+
+        return SymmetricKey(data: derivedKeyData)
+    }
+
+    /// Derive encryption key from password using PBKDF2 for export operations
+    static func deriveExportKey(from password: String, salt: Data) -> SymmetricKey {
+        let passwordData = Data(password.utf8)
+        var derivedKeyData = Data(repeating: 0, count: 32)
+
+        let result = derivedKeyData.withUnsafeMutableBytes { derivedKeyBytes in
+            passwordData.withUnsafeBytes { passwordBytes in
+                salt.withUnsafeBytes { saltBytes in
+                    CCKeyDerivationPBKDF(
+                        CCPBKDFAlgorithm(kCCPBKDF2),
+                        passwordBytes.baseAddress?.assumingMemoryBound(to: Int8.self),
+                        passwordData.count,
+                        saltBytes.baseAddress?.assumingMemoryBound(to: UInt8.self),
+                        salt.count,
+                        CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+                        pbkdf2Iterations,
+                        derivedKeyBytes.baseAddress?.assumingMemoryBound(to: UInt8.self),
+                        32
+                    )
+                }
+            }
+        }
+
+        guard result == kCCSuccess else {
+            fatalError("PBKDF2 key derivation failed")
+        }
+
+        return SymmetricKey(data: derivedKeyData)
+    }
+
+    /// Legacy HKDF key derivation (v1, kept for backward compatibility)
+    private func deriveKeyHKDF(from password: String, salt: Data) -> SymmetricKey {
+        let passwordData = Data(password.utf8)
+        return HKDF<SHA256>.deriveKey(
             inputKeyMaterial: .init(data: passwordData),
             salt: salt,
             info: Data("mindgrowee_v1".utf8),
             outputByteCount: 32
         )
-        
-        return derivedKey
+    }
+
+    /// Legacy HKDF for export (v1, kept for backward compatibility during import)
+    static func deriveExportKeyHKDF(from password: String, salt: Data) -> SymmetricKey {
+        let passwordData = Data(password.utf8)
+        return HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: .init(data: passwordData),
+            salt: salt,
+            info: Data("mindgrowee_export".utf8),
+            outputByteCount: 32
+        )
+    }
+
+    // MARK: - KDF Migration
+
+    /// Migrate from legacy HKDF (v1) to PBKDF2 (v2)
+    private func migrateKDF(password: String, salt: Data, currentKey: SymmetricKey) throws {
+        // Derive new key with PBKDF2
+        let newKey = deriveKeyPBKDF2(from: password, salt: salt)
+
+        // Load and decrypt DEK with old key
+        guard let encryptedDEK = loadFromKeychain(identifier: keyIdentifier) else {
+            throw EncryptionError.invalidKey
+        }
+        let dek = try decryptDEK(encryptedDEK, with: currentKey)
+
+        // Re-encrypt DEK with new key
+        let newEncryptedDEK = try encryptDEK(dek, with: newKey)
+
+        // Store updated encrypted DEK and version
+        try storeInKeychain(data: newEncryptedDEK, identifier: keyIdentifier)
+        try storeInKeychain(data: Data([Self.currentKDFVersion]), identifier: versionIdentifier)
+
+        // Update master key to new derivation
+        masterKey = newKey
+
+        Logger.shared.info("Migrated encryption from HKDF (v1) to PBKDF2 (v2)")
     }
     
     // MARK: - Data Encryption Key (DEK) Management
@@ -201,45 +321,51 @@ class EncryptionManager: ObservableObject {
     
     /// Export all encrypted data with password protection
     func exportEncryptedData(password: String, records: [EncryptedExportRecord]) throws -> Data {
-        // Generate export key from password
+        // Generate export key from password using PBKDF2
         let exportSalt = Data.random(count: 32)
-        let exportKey = deriveKey(from: password, salt: exportSalt)
-        
+        let exportKey = Self.deriveExportKey(from: password, salt: exportSalt)
+
         // Create export container
         var exportRecords: [ExportRecord] = []
-        
+
         for record in records {
             let encryptedData = try encryptExportRecord(record, with: exportKey)
             exportRecords.append(encryptedData)
         }
-        
+
         let container = EncryptedExportContainer(
-            version: 1,
+            version: 2,
             salt: exportSalt.base64EncodedString(),
             createdAt: Date(),
             records: exportRecords
         )
-        
+
         return try JSONEncoder().encode(container)
     }
-    
+
     /// Import encrypted data from export
     func importEncryptedData(data: Data, password: String) throws -> [EncryptedExportRecord] {
         let container = try JSONDecoder().decode(EncryptedExportContainer.self, from: data)
-        
+
         guard let salt = Data(base64Encoded: container.salt) else {
             throw EncryptionError.importFailed
         }
-        
-        let exportKey = deriveKey(from: password, salt: salt)
-        
+
+        // Use appropriate KDF based on export version
+        let exportKey: SymmetricKey
+        if container.version >= 2 {
+            exportKey = Self.deriveExportKey(from: password, salt: salt)
+        } else {
+            exportKey = Self.deriveExportKeyHKDF(from: password, salt: salt)
+        }
+
         var records: [EncryptedExportRecord] = []
-        
+
         for exportRecord in container.records {
             let record = try decryptExportRecord(exportRecord, with: exportKey)
             records.append(record)
         }
-        
+
         return records
     }
     
@@ -307,7 +433,7 @@ class EncryptionManager: ObservableObject {
     
     /// Remove all encryption keys (for logout/reset)
     func reset() {
-        let identifiers = [keyIdentifier, saltIdentifier]
+        let identifiers = [keyIdentifier, saltIdentifier, versionIdentifier]
         
         for identifier in identifiers {
             let query: [String: Any] = [

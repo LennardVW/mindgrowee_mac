@@ -73,7 +73,7 @@ final class FocusModeTests: XCTestCase {
 
 // MARK: - Backup Manager Tests
 
-final class BackupManagerTests: XCTestCase {
+final class BackupManagerFeatureTests: XCTestCase {
     
     func testBackupManagerSingleton() {
         let manager1 = BackupManager.shared

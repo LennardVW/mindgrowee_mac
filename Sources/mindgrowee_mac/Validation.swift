@@ -92,12 +92,11 @@ struct AppError: Identifiable {
 
 // MARK: - Logger
 
-@MainActor
-class Logger {
+final class Logger: Sendable {
     static let shared = Logger()
-    
+
     private let isDebugMode: Bool
-    
+
     private init() {
         #if DEBUG
         self.isDebugMode = true
@@ -105,21 +104,21 @@ class Logger {
         self.isDebugMode = false
         #endif
     }
-    
+
     func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         guard isDebugMode else { return }
         let filename = (file as NSString).lastPathComponent
         print("[DEBUG] \(filename):\(line) - \(function): \(message)")
     }
-    
+
     func info(_ message: String) {
         print("[INFO] \(message)")
     }
-    
+
     func warning(_ message: String) {
         print("[WARNING] \(message)")
     }
-    
+
     func error(_ message: String, error: Error? = nil) {
         if let error = error {
             print("[ERROR] \(message): \(error.localizedDescription)")

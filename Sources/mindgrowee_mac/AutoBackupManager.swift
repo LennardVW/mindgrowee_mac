@@ -1,12 +1,6 @@
 import SwiftUI
 import SwiftData
 
-/// Errors that can occur during backup/restore
-enum BackupError: Error {
-    case invalidBackupFormat
-    case unsupportedVersion
-}
-
 /// Automatic backup manager for local data protection
 @MainActor
 class AutoBackupManager: ObservableObject {
@@ -18,7 +12,7 @@ class AutoBackupManager: ObservableObject {
     
     private let backupInterval: TimeInterval = 24 * 60 * 60 // 24 hours
     private let backupDirectoryName = "MindGrowee_Backups"
-    private let maxBackupCount = 7 // Keep 7 days of backups
+    let maxBackupCount = 7 // Keep 7 days of backups
     
     private init() {
         loadLastBackupDate()
@@ -27,7 +21,7 @@ class AutoBackupManager: ObservableObject {
     
     // MARK: - Backup Directory
     
-    private func getBackupDirectory() -> URL {
+    func getBackupDirectory() -> URL {
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let backupDir = documentsPath.appendingPathComponent(backupDirectoryName)
         
@@ -107,7 +101,7 @@ class AutoBackupManager: ObservableObject {
                 "icon": habit.icon,
                 "color": habit.color,
                 "createdAt": ISO8601DateFormatter().string(from: habit.createdAt),
-                "categoryId": habit.categoryId?.uuidString ?? NSNull()
+                "categoryId": habit.categoryId?.uuidString as Any? ?? NSNull()
             ]
         }
         
@@ -129,9 +123,9 @@ class AutoBackupManager: ObservableObject {
                 "color": project.color,
                 "icon": project.icon,
                 "createdAt": ISO8601DateFormatter().string(from: project.createdAt),
-                "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull(),
+                "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } as Any? ?? NSNull(),
                 "isCompleted": project.isCompleted,
-                "completedAt": project.completedAt.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull()
+                "completedAt": project.completedAt.map { ISO8601DateFormatter().string(from: $0) } as Any? ?? NSNull()
             ]
         }
         
