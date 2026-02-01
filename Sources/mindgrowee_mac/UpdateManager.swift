@@ -13,7 +13,7 @@ class UpdateManager: ObservableObject {
     @Published var downloadURL: URL?
     @Published var error: String?
     
-    private let currentVersion = "1.0.0"
+    let currentVersion = "1.0.0"
     private let githubAPI = "https://api.github.com/repos/LennardVW/mindgrowee_mac/releases/latest"
     
     private init() {}

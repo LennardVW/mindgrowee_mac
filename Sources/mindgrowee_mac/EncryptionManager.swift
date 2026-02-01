@@ -23,7 +23,7 @@ class EncryptionManager: ObservableObject {
     @Published private(set) var isInitialized = false
     @Published private(set) var hasMasterKey = false
     
-    private var masterKey: SymmetricKey?
+    var masterKey: SymmetricKey?
     private let keyIdentifier = "com.mindgrowee.encryption.master"
     private let saltIdentifier = "com.mindgrowee.encryption.salt"
     
@@ -94,7 +94,7 @@ class EncryptionManager: ObservableObject {
         let passwordData = Data(password.utf8)
         
         // Use HKDF for key derivation
-        let derivedKey = HKDF.deriveKey(
+        let derivedKey = HKDF<SHA256>.deriveKey(
             inputKeyMaterial: .init(data: passwordData),
             salt: salt,
             info: Data("mindgrowee_v1".utf8),
@@ -137,7 +137,7 @@ class EncryptionManager: ObservableObject {
         return EncryptedRecord(
             id: UUID(),
             encryptedData: sealedBox.ciphertext,
-            nonce: sealedBox.nonce,
+            nonce: Data(sealedBox.nonce),
             tag: sealedBox.tag,
             keyID: keyIdentifier,
             createdAt: Date()
@@ -175,7 +175,7 @@ class EncryptionManager: ObservableObject {
         return EncryptedRecord(
             id: UUID(),
             encryptedData: sealedBox.ciphertext,
-            nonce: sealedBox.nonce,
+            nonce: Data(sealedBox.nonce),
             tag: sealedBox.tag,
             keyID: keyIdentifier,
             createdAt: Date()

@@ -18,15 +18,19 @@ struct SecureContentView: View {
         .onAppear {
             checkEncryption()
         }
-        .sheet(isPresented: $showingSetup) {
-            SetupEncryptionView {
+        .sheet(isPresented: $showingSetup, onDismiss: {
+            if EncryptionManager.shared.isInitialized {
                 isReady = true
             }
+        }) {
+            SetupEncryptionView()
         }
-        .sheet(isPresented: $showingUnlock) {
-            UnlockEncryptionView {
+        .sheet(isPresented: $showingUnlock, onDismiss: {
+            if EncryptionManager.shared.isInitialized {
                 isReady = true
             }
+        }) {
+            UnlockEncryptionView()
         }
     }
     
