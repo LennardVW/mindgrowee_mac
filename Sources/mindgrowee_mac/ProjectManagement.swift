@@ -54,6 +54,7 @@ extension Habit {
 
 // MARK: - Project Manager
 
+@MainActor
 class ProjectManager: ObservableObject {
     static let shared = ProjectManager()
     

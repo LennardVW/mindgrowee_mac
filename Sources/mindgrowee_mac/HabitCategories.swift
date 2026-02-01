@@ -17,6 +17,7 @@ extension Habit {
 
 // MARK: - Category Manager
 
+@MainActor
 class CategoryManager: ObservableObject {
     static let shared = CategoryManager()
     

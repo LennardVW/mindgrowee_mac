@@ -165,26 +165,6 @@ class Milestone {
     }
 }
 
-// MARK: - Project Computed Properties
-
-extension Project {
-    var completionPercentage: Double {
-        guard let habits = habits, !habits.isEmpty else { return 0 }
-        let completed = habits.filter { $0.isCompletedToday }.count
-        return Double(completed) / Double(habits.count)
-    }
-    
-    var overallStreak: Int {
-        let streaks = habits?.map { $0.currentStreak } ?? []
-        return streaks.min() ?? 0
-    }
-    
-    var daysUntilDeadline: Int? {
-        guard let deadline = deadline else { return nil }
-        return Calendar.current.dateComponents([.day], from: Date(), to: deadline).day
-    }
-}
-
 // MARK: - Helper Functions
 
 func startOfDay(_ date: Date) -> Date {

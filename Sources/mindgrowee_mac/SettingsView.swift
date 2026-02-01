@@ -20,14 +20,19 @@ struct SettingsView: View {
     @State private var showingClearData = false
     @State private var showingReset = false
     
-    private let accentColors = [
-        ("red", Color.red),
-        ("orange", Color.orange),
-        ("yellow", Color.yellow),
-        ("green", Color.green),
-        ("blue", Color.blue),
-        ("purple", Color.purple),
-        ("pink", Color.pink)
+    private struct AccentColorOption: Identifiable {
+        let id: String
+        let color: Color
+    }
+
+    private let accentColors: [AccentColorOption] = [
+        AccentColorOption(id: "red", color: .red),
+        AccentColorOption(id: "orange", color: .orange),
+        AccentColorOption(id: "yellow", color: .yellow),
+        AccentColorOption(id: "green", color: .green),
+        AccentColorOption(id: "blue", color: .blue),
+        AccentColorOption(id: "purple", color: .purple),
+        AccentColorOption(id: "pink", color: .pink)
     ]
     
     var body: some View {
@@ -49,14 +54,14 @@ struct SettingsView: View {
                         Text("Accent Color")
                         Spacer()
                         HStack(spacing: 8) {
-                            ForEach(accentColors, id: \.name) { color in
-                                Button(action: { accentColor = color.name }) {
+                            ForEach(accentColors) { option in
+                                Button(action: { accentColor = option.id }) {
                                     Circle()
-                                        .fill(color.color)
+                                        .fill(option.color)
                                         .frame(width: 24, height: 24)
                                         .overlay(
                                             Circle()
-                                                .stroke(accentColor == color.name ? Color.primary : Color.clear, lineWidth: 2)
+                                                .stroke(accentColor == option.id ? Color.primary : Color.clear, lineWidth: 2)
                                         )
                                 }
                                 .buttonStyle(.plain)

@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Quick Actions Manager
 
+@MainActor
 class QuickActionsManager: ObservableObject {
     static let shared = QuickActionsManager()
     

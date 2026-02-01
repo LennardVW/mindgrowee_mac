@@ -70,11 +70,12 @@ enum L10n {
 
 // MARK: - Localization Helper
 
+@MainActor
 class Localization {
     static let shared = Localization()
     
     var currentLanguage: String {
-        return Locale.current.languageCode ?? "en"
+        return Locale.current.language.languageCode?.identifier ?? "en"
     }
     
     var isGerman: Bool {

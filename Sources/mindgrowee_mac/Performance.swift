@@ -2,6 +2,7 @@ import Foundation
 
 // MARK: - Performance Monitor
 
+@MainActor
 class PerformanceMonitor {
     static let shared = PerformanceMonitor()
     
@@ -165,6 +166,7 @@ class Debouncer {
 
 // MARK: - Image Cache
 
+@MainActor
 class ImageCache {
     static let shared = ImageCache()
     
@@ -183,6 +185,7 @@ class ImageCache {
 
 // MARK: - Batch Processor
 
+@MainActor
 class BatchProcessor<T> {
     private let processingInterval: TimeInterval
     private var items: [T] = []
@@ -207,7 +210,9 @@ class BatchProcessor<T> {
     private func scheduleProcessing() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: processingInterval, repeats: false) { [weak self] _ in
-            self?.processItems()
+            Task { @MainActor in
+                self?.processItems()
+            }
         }
     }
     
@@ -246,13 +251,13 @@ struct Lazy<T> {
 // MARK: - Background Task Helper
 
 class BackgroundTask {
-    static func run<T>(priority: TaskPriority = .userInitiated, operation: @escaping () async -> T) async -> T {
+    static func run<T: Sendable>(priority: TaskPriority = .userInitiated, operation: @escaping @Sendable () async -> T) async -> T {
         return await Task(priority: priority) {
             return await operation()
         }.value
     }
     
-    static func runOnMain<T>(operation: @escaping () -> T) async -> T {
+    static func runOnMain<T: Sendable>(operation: @escaping @MainActor () -> T) async -> T {
         return await MainActor.run {
             return operation()
         }

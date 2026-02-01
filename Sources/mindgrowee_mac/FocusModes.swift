@@ -3,6 +3,7 @@ import SwiftData
 
 // MARK: - Focus Mode Manager
 
+@MainActor
 class FocusModeManager: ObservableObject {
     static let shared = FocusModeManager()
     

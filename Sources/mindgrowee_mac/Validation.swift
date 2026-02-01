@@ -24,6 +24,7 @@ enum ValidationError: Error, LocalizedError {
 
 // MARK: - Data Validation
 
+@MainActor
 class DataValidator {
     static let shared = DataValidator()
     
@@ -61,7 +62,8 @@ import SwiftData
 
 // MARK: - Error Handler
 
-class ErrorHandler {
+@MainActor
+class ErrorHandler: ObservableObject {
     static let shared = ErrorHandler()
     
     @Published var currentError: AppError?
@@ -70,11 +72,7 @@ class ErrorHandler {
     private init() {}
     
     func handle(_ error: Error) {
-        if let appError = error as? AppError {
-            currentError = appError
-        } else {
-            currentError = AppError(message: error.localizedDescription)
-        }
+        currentError = AppError(message: error.localizedDescription)
         showError = true
     }
     
@@ -94,6 +92,7 @@ struct AppError: Identifiable {
 
 // MARK: - Logger
 
+@MainActor
 class Logger {
     static let shared = Logger()
     

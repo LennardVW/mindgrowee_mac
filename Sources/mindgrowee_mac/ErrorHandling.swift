@@ -4,6 +4,7 @@ import SwiftData
 
 // MARK: - Error Recovery Manager
 
+@MainActor
 class ErrorRecoveryManager {
     static let shared = ErrorRecoveryManager()
     
@@ -217,36 +218,9 @@ extension View {
     }
 }
 
-// MARK: - Safe State Management
-
-@propertyWrapper
-struct SafeState<T> {
-    private var storage: T
-    private let defaultValue: T
-    
-    var wrappedValue: T {
-        get { storage }
-        set {
-            // Validate before setting
-            storage = newValue
-        }
-    }
-    
-    var projectedValue: Binding<T> {
-        Binding(
-            get: { storage },
-            set: { storage = $0 }
-        )
-    }
-    
-    init(wrappedValue: T) {
-        self.storage = wrappedValue
-        self.defaultValue = wrappedValue
-    }
-}
-
 // MARK: - Crash Prevention
 
+@MainActor
 class CrashPrevention {
     static let shared = CrashPrevention()
     

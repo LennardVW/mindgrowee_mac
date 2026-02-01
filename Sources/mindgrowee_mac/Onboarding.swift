@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Onboarding Manager
 
+@MainActor
 class OnboardingManager: ObservableObject {
     static let shared = OnboardingManager()
     
@@ -172,6 +173,7 @@ struct OnboardingPageView: View {
 
 // MARK: - Tips Manager
 
+@MainActor
 class TipsManager: ObservableObject {
     static let shared = TipsManager()
     
@@ -248,12 +250,12 @@ class TipsManager: ObservableObject {
     
     private func loadShownTips() {
         if let tips = UserDefaults.standard.array(forKey: "shownTips") as? [String] {
-            shownTips = Set(tips)
+            shownTips = Set(tips.compactMap { UUID(uuidString: $0) })
         }
     }
-    
+
     private func saveShownTips() {
-        UserDefaults.standard.set(Array(shownTips), forKey: "shownTips")
+        UserDefaults.standard.set(Array(shownTips.map { $0.uuidString }), forKey: "shownTips")
     }
 }
 

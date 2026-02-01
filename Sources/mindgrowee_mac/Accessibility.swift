@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Accessibility Manager
 
+@MainActor
 class AccessibilityManager {
     static let shared = AccessibilityManager()
     
@@ -204,6 +205,7 @@ struct AccessibleToggle: View {
 // MARK: - Accessibility Testing Helper
 
 #if DEBUG
+@MainActor
 class AccessibilityTester {
     static let shared = AccessibilityTester()
     
@@ -228,7 +230,7 @@ class AccessibilityTester {
     }
     
     func validateAccessibility(for viewController: NSViewController) -> Bool {
-        guard let view = viewController.view else { return false }
+        let view = viewController.view
         let issues = runAccessibilityAudit(on: view)
         
         if !issues.isEmpty {

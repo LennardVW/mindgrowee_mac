@@ -12,8 +12,7 @@ class StreakFreezeManager: ObservableObject {
     
     func calculateAvailableFreezes(freezes: [StreakFreeze]) -> Int {
         let usedCount = freezes.filter { $0.isUsed }.count
-        let totalCount = freezes.count
-        
+
         // Simple calculation: max - used
         return max(0, maxFreezes - usedCount)
     }

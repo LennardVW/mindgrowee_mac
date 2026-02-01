@@ -3,6 +3,7 @@ import SwiftData
 
 // MARK: - Backup Manager
 
+@MainActor
 class BackupManager: ObservableObject {
     static let shared = BackupManager()
     

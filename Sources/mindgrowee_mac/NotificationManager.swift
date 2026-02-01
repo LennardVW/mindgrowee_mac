@@ -3,6 +3,7 @@ import UserNotifications
 
 // MARK: - Notification Manager
 
+@MainActor
 class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
@@ -26,8 +27,9 @@ class NotificationManager: ObservableObject {
     
     func checkAuthorization() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let isAuthorized = settings.authorizationStatus == .authorized
             DispatchQueue.main.async {
-                self.isAuthorized = settings.authorizationStatus == .authorized
+                self.isAuthorized = isAuthorized
             }
         }
     }
@@ -152,6 +154,7 @@ struct HabitReminder: Codable, Equatable {
 
 import AVFoundation
 
+@MainActor
 class SoundManager: ObservableObject {
     static let shared = SoundManager()
     

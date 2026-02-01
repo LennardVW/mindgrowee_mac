@@ -5,6 +5,7 @@ import AppKit
 
 // MARK: - Spotlight Index Manager
 
+@MainActor
 class SpotlightIndexManager {
     static let shared = SpotlightIndexManager()
     
@@ -111,42 +112,6 @@ class SpotlightIndexManager {
 enum SearchResult {
     case habit(id: UUID)
     case journalEntry(id: UUID)
-}
-
-// MARK: - App Delegate Extension for Spotlight
-
-extension AppDelegate {
-    func application(_ application: NSApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([any NSUserActivityRestoring]) -> Void) -> Bool {
-        if userActivity.activityType == CSSearchableItemActionType {
-            if let identifier = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String {
-                handleSpotlightSearch(identifier: identifier)
-                return true
-            }
-        }
-        return false
-    }
-    
-    private func handleSpotlightSearch(identifier: String) {
-        guard let result = SpotlightIndexManager.shared.handleSearchResult(identifier: identifier) else { return }
-        
-        // Open main window
-        openMainWindow()
-        
-        // Navigate to appropriate view
-        switch result {
-        case .habit(let id):
-            NotificationCenter.default.post(name: .openHabit, object: id)
-        case .journalEntry(let id):
-            NotificationCenter.default.post(name: .openJournalEntry, object: id)
-        }
-    }
-    
-    private func openMainWindow() {
-        if let window = NSApp.windows.first(where: { $0.title == "MindGrowee" }) {
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-        }
-    }
 }
 
 // MARK: - Notification Names

@@ -60,6 +60,7 @@ let previewContainer: ModelContainer = {
 
 // MARK: - Preview Helpers
 
+@MainActor
 struct PreviewHelpers {
     static let sampleHabits: [Habit] = [
         Habit(title: "Exercise", icon: "figure.walk", color: "green"),

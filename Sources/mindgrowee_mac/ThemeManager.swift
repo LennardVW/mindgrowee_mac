@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Theme Manager
 
+@MainActor
 class ThemeManager: ObservableObject {
     static let shared = ThemeManager()
     
@@ -77,6 +78,7 @@ struct ThemeModifier: ViewModifier {
 
 // MARK: - Keyboard Navigation Manager
 
+@MainActor
 class KeyboardNavigation: ObservableObject {
     static let shared = KeyboardNavigation()
     
@@ -130,6 +132,7 @@ class KeyboardNavigation: ObservableObject {
 
 import AppKit
 
+@MainActor
 class HapticManager {
     static let shared = HapticManager()
     
