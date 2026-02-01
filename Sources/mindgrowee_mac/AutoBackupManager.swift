@@ -1,6 +1,12 @@
 import SwiftUI
 import SwiftData
 
+/// Errors that can occur during backup/restore
+enum BackupError: Error {
+    case invalidBackupFormat
+    case unsupportedVersion
+}
+
 /// Automatic backup manager for local data protection
 @MainActor
 class AutoBackupManager: ObservableObject {
@@ -84,19 +90,69 @@ class AutoBackupManager: ObservableObject {
     }
     
     private func createBackup() async throws {
-        // TODO: Implement actual backup logic
-        // 1. Export all data
-        // 2. Encrypt if needed
-        // 3. Save to backup directory with timestamp
+        // Export all data from SwiftData
+        let container = try ModelContainer(for: Habit.self, JournalEntry.self, Project.self)
+        let context = ModelContext(container)
         
+        // Fetch all data
+        let habits = try context.fetch(FetchDescriptor<Habit>())
+        let journalEntries = try context.fetch(FetchDescriptor<JournalEntry>())
+        let projects = try context.fetch(FetchDescriptor<Project>())
+        
+        // Serialize to dictionaries
+        let habitsData = habits.map { habit in
+            [
+                "id": habit.id.uuidString,
+                "title": habit.title,
+                "icon": habit.icon,
+                "color": habit.color,
+                "createdAt": ISO8601DateFormatter().string(from: habit.createdAt),
+                "categoryId": habit.categoryId?.uuidString ?? NSNull()
+            ]
+        }
+        
+        let journalData = journalEntries.map { entry in
+            [
+                "id": entry.id.uuidString,
+                "date": ISO8601DateFormatter().string(from: entry.date),
+                "content": entry.content,
+                "mood": entry.mood,
+                "tags": entry.tags
+            ]
+        }
+        
+        let projectsData = projects.map { project in
+            [
+                "id": project.id.uuidString,
+                "name": project.name,
+                "projectDescription": project.projectDescription,
+                "color": project.color,
+                "icon": project.icon,
+                "createdAt": ISO8601DateFormatter().string(from: project.createdAt),
+                "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull(),
+                "isCompleted": project.isCompleted,
+                "completedAt": project.completedAt.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull()
+            ]
+        }
+        
+        // Create backup structure
+        let backup: [String: Any] = [
+            "version": 1,
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
+            "habits": habitsData,
+            "journalEntries": journalData,
+            "projects": projectsData
+        ]
+        
+        // Serialize and save
         let timestamp = ISO8601DateFormatter().string(from: Date())
         let backupName = "mindgrowee_backup_\(timestamp).json"
         let backupURL = getBackupDirectory().appendingPathComponent(backupName)
         
-        // Placeholder: Create empty file for now
-        let placeholder = ["backup": true, "timestamp": timestamp] as [String: Any]
-        let data = try JSONSerialization.data(withJSONObject: placeholder)
+        let data = try JSONSerialization.data(withJSONObject: backup, options: .prettyPrinted)
         try data.write(to: backupURL)
+        
+        Logger.shared.info("Backup created: \(backupName) with \(habits.count) habits, \(journalEntries.count) entries, \(projects.count) projects")
     }
     
     private func cleanupOldBackups() {
@@ -150,8 +206,93 @@ class AutoBackupManager: ObservableObject {
     }
     
     func restoreFromBackup(_ url: URL) throws {
-        // TODO: Implement restore logic
         Logger.shared.info("Restoring from backup: \(url.lastPathComponent)")
+        
+        // Read backup data
+        let data = try Data(contentsOf: url)
+        guard let backup = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw BackupError.invalidBackupFormat
+        }
+        
+        // Validate version
+        guard let version = backup["version"] as? Int, version == 1 else {
+            throw BackupError.unsupportedVersion
+        }
+        
+        // Get model context
+        let container = try ModelContainer(for: Habit.self, JournalEntry.self, Project.self)
+        let context = ModelContext(container)
+        
+        let dateFormatter = ISO8601DateFormatter()
+        
+        // Restore habits
+        if let habitsData = backup["habits"] as? [[String: Any]] {
+            for habitDict in habitsData {
+                guard let id = habitDict["id"] as? String,
+                      let title = habitDict["title"] as? String,
+                      let icon = habitDict["icon"] as? String,
+                      let color = habitDict["color"] as? String,
+                      let createdAtStr = habitDict["createdAt"] as? String,
+                      let createdAt = dateFormatter.date(from: createdAtStr) else {
+                    continue
+                }
+                
+                let categoryId = (habitDict["categoryId"] as? String).flatMap { UUID(uuidString: $0) }
+                
+                let habit = Habit(title: title, icon: icon, color: color, categoryId: categoryId)
+                habit.id = UUID(uuidString: id) ?? UUID()
+                habit.createdAt = createdAt
+                context.insert(habit)
+            }
+        }
+        
+        // Restore journal entries
+        if let journalData = backup["journalEntries"] as? [[String: Any]] {
+            for entryDict in journalData {
+                guard let id = entryDict["id"] as? String,
+                      let dateStr = entryDict["date"] as? String,
+                      let date = dateFormatter.date(from: dateStr),
+                      let content = entryDict["content"] as? String,
+                      let mood = entryDict["mood"] as? Int,
+                      let tags = entryDict["tags"] as? [String] else {
+                    continue
+                }
+                
+                let entry = JournalEntry(date: date, content: content, mood: mood, tags: tags)
+                entry.id = UUID(uuidString: id) ?? UUID()
+                context.insert(entry)
+            }
+        }
+        
+        // Restore projects
+        if let projectsData = backup["projects"] as? [[String: Any]] {
+            for projectDict in projectsData {
+                guard let id = projectDict["id"] as? String,
+                      let name = projectDict["name"] as? String,
+                      let projectDescription = projectDict["projectDescription"] as? String,
+                      let color = projectDict["color"] as? String,
+                      let icon = projectDict["icon"] as? String,
+                      let createdAtStr = projectDict["createdAt"] as? String,
+                      let createdAt = dateFormatter.date(from: createdAtStr) else {
+                    continue
+                }
+                
+                let deadline = (projectDict["deadline"] as? String).flatMap { dateFormatter.date(from: $0) }
+                let isCompleted = projectDict["isCompleted"] as? Bool ?? false
+                let completedAt = (projectDict["completedAt"] as? String).flatMap { dateFormatter.date(from: $0) }
+                
+                let project = Project(name: name, description: projectDescription, color: color, icon: icon, deadline: deadline)
+                project.id = UUID(uuidString: id) ?? UUID()
+                project.createdAt = createdAt
+                project.isCompleted = isCompleted
+                project.completedAt = completedAt
+                context.insert(project)
+            }
+        }
+        
+        // Save context
+        try context.save()
+        Logger.shared.info("Restore completed from: \(url.lastPathComponent)")
     }
     
     func deleteBackup(_ url: URL) {
