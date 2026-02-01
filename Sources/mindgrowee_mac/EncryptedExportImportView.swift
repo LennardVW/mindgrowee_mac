@@ -214,59 +214,61 @@ struct EncryptedExportImportView: View {
         
         Task {
             do {
-                // Collect all data
-                var records: [EncryptedExportRecord] = []
+                // Create export container with raw data
+                var exportItems: [ExportItem] = []
                 
+                // Export habits
                 for habit in habits {
-                    let record = EncryptedExportRecord(
-                        id: habit.id,
-                        table: "habits",
-                        encryptedData: Data(),
-                        nonce: Data(),
-                        tag: Data(),
-                        createdAt: Date()
+                    let item = ExportItem(
+                        id: habit.id.uuidString,
+                        type: "habit",
+                        data: try JSONEncoder().encode(habit)
                     )
-                    records.append(record)
+                    exportItems.append(item)
                 }
                 
+                // Export journal entries
                 for entry in journalEntries {
-                    let record = EncryptedExportRecord(
-                        id: entry.id,
-                        table: "journal",
-                        encryptedData: Data(),
-                        nonce: Data(),
-                        tag: Data(),
-                        createdAt: Date()
+                    let item = ExportItem(
+                        id: entry.id.uuidString,
+                        type: "journal",
+                        data: try JSONEncoder().encode(entry)
                     )
-                    records.append(record)
+                    exportItems.append(item)
                 }
                 
+                // Export projects
                 for project in projects {
-                    let record = EncryptedExportRecord(
-                        id: project.id,
-                        table: "projects",
-                        encryptedData: Data(),
-                        nonce: Data(),
-                        tag: Data(),
-                        createdAt: Date()
+                    let item = ExportItem(
+                        id: project.id.uuidString,
+                        type: "project",
+                        data: try JSONEncoder().encode(project)
                     )
-                    records.append(record)
+                    exportItems.append(item)
                 }
                 
-                // Export with encryption
-                let exportData = try EncryptionManager.shared.exportEncryptedData(
-                    password: password,
-                    records: records
+                // Create export container
+                let container = ExportContainer(
+                    version: 1,
+                    exportDate: Date(),
+                    items: exportItems
                 )
                 
+                // Serialize container
+                let containerData = try JSONEncoder().encode(container)
+                
+                // Encrypt with password using AES-256-GCM
+                let encryptedData = try encryptExportData(containerData, password: password)
+                
                 // Save to file
-                let filename = "mindgrowee_backup_\(Date().ISO8601Format()).json"
-                let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-                try exportData.write(to: url)
+                let filename = "mindgrowee_backup_\(formatDate(Date())).mindgrowee"
+                let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent(filename)
+                try encryptedData.write(to: url)
                 
                 await MainActor.run {
                     exportedFileURL = url
-                    successMessage = "Export successful! File saved to: \(url.path)"
+                    successMessage = "Export successful! Encrypted file saved to Downloads."
                     showSuccess = true
                     isProcessing = false
                 }
@@ -279,6 +281,36 @@ struct EncryptedExportImportView: View {
                 }
             }
         }
+    }
+    
+    private func encryptExportData(_ data: Data, password: String) throws -> Data {
+        // Derive key from password
+        let passwordData = Data(password.utf8)
+        let salt = Data.random(count: 32)
+        let key = HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: .init(data: passwordData),
+            salt: salt,
+            info: Data("mindgrowee_export".utf8),
+            outputByteCount: 32
+        )
+        
+        // Encrypt data
+        let sealedBox = try AES.GCM.seal(data, using: key)
+        
+        // Create export format: salt + nonce + ciphertext + tag
+        var exportData = Data()
+        exportData.append(salt)
+        exportData.append(Data(sealedBox.nonce))
+        exportData.append(sealedBox.ciphertext)
+        exportData.append(sealedBox.tag)
+        
+        return exportData
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm"
+        return formatter.string(from: date)
     }
     
     // MARK: - Import
@@ -302,20 +334,43 @@ struct EncryptedExportImportView: View {
         
         Task {
             do {
-                let data = try Data(contentsOf: url)
-                let records = try EncryptionManager.shared.importEncryptedData(
-                    data: data,
-                    password: importPassword
-                )
+                // Read encrypted data
+                let encryptedData = try Data(contentsOf: url)
                 
-                // Process imported records
-                for record in records {
-                    // TODO: Decode and insert into database
-                    Logger.shared.info("Imported: \(record.table) - \(record.id)")
+                // Decrypt with password
+                let containerData = try decryptImportData(encryptedData, password: importPassword)
+                
+                // Decode container
+                let container = try JSONDecoder().decode(ExportContainer.self, from: containerData)
+                
+                // Import items
+                var importedCount = 0
+                for item in container.items {
+                    switch item.type {
+                    case "habit":
+                        if let habit = try? JSONDecoder().decode(Habit.self, from: item.data) {
+                            modelContext.insert(habit)
+                            importedCount += 1
+                        }
+                    case "journal":
+                        if let entry = try? JSONDecoder().decode(JournalEntry.self, from: item.data) {
+                            modelContext.insert(entry)
+                            importedCount += 1
+                        }
+                    case "project":
+                        if let project = try? JSONDecoder().decode(Project.self, from: item.data) {
+                            modelContext.insert(project)
+                            importedCount += 1
+                        }
+                    default:
+                        break
+                    }
                 }
                 
+                try modelContext.save()
+                
                 await MainActor.run {
-                    successMessage = "Import successful! \(records.count) items imported."
+                    successMessage = "Import successful! \(importedCount) items imported."
                     showSuccess = true
                     isProcessing = false
                 }
@@ -328,6 +383,33 @@ struct EncryptedExportImportView: View {
                 }
             }
         }
+    }
+    
+    private func decryptImportData(_ data: Data, password: String) throws -> Data {
+        // Parse format: salt (32) + nonce (12) + ciphertext + tag (16)
+        guard data.count > 60 else {
+            throw EncryptionError.decryptionFailed
+        }
+        
+        let salt = data.prefix(32)
+        let nonceData = data.dropFirst(32).prefix(12)
+        let tag = data.suffix(16)
+        let ciphertext = data.dropFirst(44).dropLast(16)
+        
+        // Derive key from password
+        let passwordData = Data(password.utf8)
+        let key = HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: .init(data: passwordData),
+            salt: Data(salt),
+            info: Data("mindgrowee_export".utf8),
+            outputByteCount: 32
+        )
+        
+        // Decrypt
+        let nonce = try AES.GCM.Nonce(data: Data(nonceData))
+        let sealedBox = try AES.GCM.SealedBox(nonce: nonce, ciphertext: Data(ciphertext), tag: Data(tag))
+        
+        return try AES.GCM.open(sealedBox, using: key)
     }
 }
 
@@ -495,5 +577,29 @@ struct UnlockEncryptionView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Export Data Structures
+
+struct ExportItem: Codable {
+    let id: String
+    let type: String
+    let data: Data
+}
+
+struct ExportContainer: Codable {
+    let version: Int
+    let exportDate: Date
+    let items: [ExportItem]
+}
+
+// MARK: - Data Extension for Random
+
+extension Data {
+    static func random(count: Int) -> Data {
+        var bytes = [UInt8](repeating: 0, count: count)
+        _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
+        return Data(bytes)
     }
 }
