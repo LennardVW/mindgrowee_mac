@@ -162,7 +162,7 @@ struct SettingsView: View {
         }
         .frame(width: 400, height: 500)
         .sheet(isPresented: $showingImport) {
-            ImportView()
+            EncryptedExportImportView()
         }
         .tint(resolvedAccent)
         .accentColor(resolvedAccent)

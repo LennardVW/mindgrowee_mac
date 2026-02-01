@@ -77,7 +77,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showingExport) {
-            ExportView()
+            EncryptedExportImportView()
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()

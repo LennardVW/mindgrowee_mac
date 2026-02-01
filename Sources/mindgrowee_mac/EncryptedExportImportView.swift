@@ -292,16 +292,27 @@ struct EncryptedExportImportView: View {
                 // Encrypt with password using AES-256-GCM
                 let encryptedData = try encryptExportData(containerData, password: password)
                 
-                // Save to file
+                // Save via NSSavePanel so the user picks the location
                 let filename = "mindgrowee_backup_\(formatDate(Date())).mindgrowee"
-                let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                    .appendingPathComponent(filename)
-                try encryptedData.write(to: url)
-                
+
                 await MainActor.run {
-                    exportedFileURL = url
-                    successMessage = "Export successful! Encrypted file saved to Downloads."
-                    showSuccess = true
+                    let panel = NSSavePanel()
+                    panel.nameFieldStringValue = filename
+                    panel.allowedContentTypes = [.data]
+                    panel.canCreateDirectories = true
+                    panel.title = "Save Encrypted Backup"
+
+                    if panel.runModal() == .OK, let url = panel.url {
+                        do {
+                            try encryptedData.write(to: url)
+                            exportedFileURL = url
+                            successMessage = "Export successful! Encrypted file saved."
+                            showSuccess = true
+                        } catch {
+                            successMessage = "Export failed: \(error.localizedDescription)"
+                            showSuccess = true
+                        }
+                    }
                     isProcessing = false
                 }
                 
