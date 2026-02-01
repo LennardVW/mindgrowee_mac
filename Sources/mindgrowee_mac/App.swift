@@ -13,8 +13,18 @@ struct MindGroweeMacApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SecureContentView()
         }
-        .modelContainer(for: [Habit.self, DailyCompletion.self, JournalEntry.self, StreakFreeze.self, HabitCategory.self, FocusMode.self, Project.self, Milestone.self])
+        .modelContainer(for: [
+            Habit.self,
+            DailyCompletion.self,
+            JournalEntry.self,
+            EncryptedJournalEntry.self,
+            StreakFreeze.self,
+            HabitCategory.self,
+            FocusMode.self,
+            Project.self,
+            Milestone.self
+        ])
     }
 }
