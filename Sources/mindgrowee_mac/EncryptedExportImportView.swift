@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import CryptoKit
+import Security
 
 // MARK: - Encrypted Export Import View
 
@@ -214,35 +216,63 @@ struct EncryptedExportImportView: View {
         
         Task {
             do {
-                // Create export container with raw data
+                // Create export container with raw data dictionaries
                 var exportItems: [ExportItem] = []
                 
                 // Export habits
                 for habit in habits {
+                    let habitData: [String: Any] = [
+                        "id": habit.id.uuidString,
+                        "name": habit.name,
+                        "category": habit.category.rawValue,
+                        "frequency": habit.frequency.rawValue,
+                        "targetPerDay": habit.targetPerDay,
+                        "createdAt": ISO8601DateFormatter().string(from: habit.createdAt),
+                        "isActive": habit.isActive
+                    ]
+                    let data = try JSONSerialization.data(withJSONObject: habitData)
                     let item = ExportItem(
                         id: habit.id.uuidString,
                         type: "habit",
-                        data: try JSONEncoder().encode(habit)
+                        data: data
                     )
                     exportItems.append(item)
                 }
                 
                 // Export journal entries
                 for entry in journalEntries {
+                    let entryData: [String: Any] = [
+                        "id": entry.id.uuidString,
+                        "date": ISO8601DateFormatter().string(from: entry.date),
+                        "content": entry.content,
+                        "mood": entry.mood,
+                        "tags": entry.tags,
+                        "createdAt": ISO8601DateFormatter().string(from: entry.createdAt)
+                    ]
+                    let data = try JSONSerialization.data(withJSONObject: entryData)
                     let item = ExportItem(
                         id: entry.id.uuidString,
                         type: "journal",
-                        data: try JSONEncoder().encode(entry)
+                        data: data
                     )
                     exportItems.append(item)
                 }
                 
                 // Export projects
                 for project in projects {
+                    let projectData: [String: Any] = [
+                        "id": project.id.uuidString,
+                        "name": project.name,
+                        "goal": project.goal,
+                        "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull(),
+                        "createdAt": ISO8601DateFormatter().string(from: project.createdAt),
+                        "isCompleted": project.isCompleted
+                    ]
+                    let data = try JSONSerialization.data(withJSONObject: projectData)
                     let item = ExportItem(
                         id: project.id.uuidString,
                         type: "project",
-                        data: try JSONEncoder().encode(project)
+                        data: data
                     )
                     exportItems.append(item)
                 }
@@ -345,23 +375,85 @@ struct EncryptedExportImportView: View {
                 
                 // Import items
                 var importedCount = 0
+                let dateFormatter = ISO8601DateFormatter()
+                
                 for item in container.items {
+                    guard let json = try? JSONSerialization.jsonObject(with: item.data) as? [String: Any] else {
+                        continue
+                    }
+                    
                     switch item.type {
                     case "habit":
-                        if let habit = try? JSONDecoder().decode(Habit.self, from: item.data) {
+                        if let id = json["id"] as? String,
+                           let name = json["name"] as? String,
+                           let categoryRaw = json["category"] as? String,
+                           let frequencyRaw = json["frequency"] as? String,
+                           let targetPerDay = json["targetPerDay"] as? Int,
+                           let createdAtStr = json["createdAt"] as? String,
+                           let isActive = json["isActive"] as? Bool,
+                           let createdAt = dateFormatter.date(from: createdAtStr) {
+                            
+                            let category = HabitCategory(rawValue: categoryRaw) ?? .health
+                            let frequency = HabitFrequency(rawValue: frequencyRaw) ?? .daily
+                            
+                            let habit = Habit(
+                                name: name,
+                                category: category,
+                                frequency: frequency,
+                                targetPerDay: targetPerDay
+                            )
+                            // Override ID and dates
+                            habit.id = UUID(uuidString: id) ?? UUID()
+                            habit.createdAt = createdAt
+                            habit.isActive = isActive
                             modelContext.insert(habit)
                             importedCount += 1
                         }
+                        
                     case "journal":
-                        if let entry = try? JSONDecoder().decode(JournalEntry.self, from: item.data) {
+                        if let id = json["id"] as? String,
+                           let dateStr = json["date"] as? String,
+                           let content = json["content"] as? String,
+                           let mood = json["mood"] as? Int,
+                           let tags = json["tags"] as? [String],
+                           let createdAtStr = json["createdAt"] as? String,
+                           let date = dateFormatter.date(from: dateStr),
+                           let createdAt = dateFormatter.date(from: createdAtStr) {
+                            
+                            let entry = JournalEntry(
+                                date: date,
+                                content: content,
+                                mood: mood,
+                                tags: tags
+                            )
+                            entry.id = UUID(uuidString: id) ?? UUID()
+                            entry.createdAt = createdAt
                             modelContext.insert(entry)
                             importedCount += 1
                         }
+                        
                     case "project":
-                        if let project = try? JSONDecoder().decode(Project.self, from: item.data) {
+                        if let id = json["id"] as? String,
+                           let name = json["name"] as? String,
+                           let goal = json["goal"] as? String,
+                           let createdAtStr = json["createdAt"] as? String,
+                           let isCompleted = json["isCompleted"] as? Bool,
+                           let createdAt = dateFormatter.date(from: createdAtStr) {
+                            
+                            let deadline: Date? = (json["deadline"] as? String).flatMap { dateFormatter.date(from: $0) }
+                            
+                            let project = Project(
+                                name: name,
+                                goal: goal,
+                                deadline: deadline
+                            )
+                            project.id = UUID(uuidString: id) ?? UUID()
+                            project.createdAt = createdAt
+                            project.isCompleted = isCompleted
                             modelContext.insert(project)
                             importedCount += 1
                         }
+                        
                     default:
                         break
                     }
@@ -594,12 +686,4 @@ struct ExportContainer: Codable {
     let items: [ExportItem]
 }
 
-// MARK: - Data Extension for Random
-
-extension Data {
-    static func random(count: Int) -> Data {
-        var bytes = [UInt8](repeating: 0, count: count)
-        _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
-        return Data(bytes)
-    }
-}
+// Note: Data.random(count:) is defined in EncryptionManager.swift
