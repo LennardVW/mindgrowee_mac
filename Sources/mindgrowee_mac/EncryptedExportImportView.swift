@@ -223,12 +223,11 @@ struct EncryptedExportImportView: View {
                 for habit in habits {
                     let habitData: [String: Any] = [
                         "id": habit.id.uuidString,
-                        "name": habit.name,
-                        "category": habit.category.rawValue,
-                        "frequency": habit.frequency.rawValue,
-                        "targetPerDay": habit.targetPerDay,
+                        "title": habit.title,
+                        "icon": habit.icon,
+                        "color": habit.color,
                         "createdAt": ISO8601DateFormatter().string(from: habit.createdAt),
-                        "isActive": habit.isActive
+                        "categoryId": habit.categoryId?.uuidString ?? NSNull()
                     ]
                     let data = try JSONSerialization.data(withJSONObject: habitData)
                     let item = ExportItem(
@@ -246,8 +245,7 @@ struct EncryptedExportImportView: View {
                         "date": ISO8601DateFormatter().string(from: entry.date),
                         "content": entry.content,
                         "mood": entry.mood,
-                        "tags": entry.tags,
-                        "createdAt": ISO8601DateFormatter().string(from: entry.createdAt)
+                        "tags": entry.tags
                     ]
                     let data = try JSONSerialization.data(withJSONObject: entryData)
                     let item = ExportItem(
@@ -263,10 +261,13 @@ struct EncryptedExportImportView: View {
                     let projectData: [String: Any] = [
                         "id": project.id.uuidString,
                         "name": project.name,
-                        "goal": project.goal,
-                        "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull(),
+                        "projectDescription": project.projectDescription,
+                        "color": project.color,
+                        "icon": project.icon,
                         "createdAt": ISO8601DateFormatter().string(from: project.createdAt),
-                        "isCompleted": project.isCompleted
+                        "deadline": project.deadline.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull(),
+                        "isCompleted": project.isCompleted,
+                        "completedAt": project.completedAt.map { ISO8601DateFormatter().string(from: $0) } ?? NSNull()
                     ]
                     let data = try JSONSerialization.data(withJSONObject: projectData)
                     let item = ExportItem(
@@ -385,27 +386,23 @@ struct EncryptedExportImportView: View {
                     switch item.type {
                     case "habit":
                         if let id = json["id"] as? String,
-                           let name = json["name"] as? String,
-                           let categoryRaw = json["category"] as? String,
-                           let frequencyRaw = json["frequency"] as? String,
-                           let targetPerDay = json["targetPerDay"] as? Int,
+                           let title = json["title"] as? String,
+                           let icon = json["icon"] as? String,
+                           let color = json["color"] as? String,
                            let createdAtStr = json["createdAt"] as? String,
-                           let isActive = json["isActive"] as? Bool,
                            let createdAt = dateFormatter.date(from: createdAtStr) {
                             
-                            let category = HabitCategory(rawValue: categoryRaw) ?? .health
-                            let frequency = HabitFrequency(rawValue: frequencyRaw) ?? .daily
+                            let categoryId: UUID? = (json["categoryId"] as? String).flatMap { UUID(uuidString: $0) }
                             
                             let habit = Habit(
-                                name: name,
-                                category: category,
-                                frequency: frequency,
-                                targetPerDay: targetPerDay
+                                title: title,
+                                icon: icon,
+                                color: color,
+                                categoryId: categoryId
                             )
                             // Override ID and dates
                             habit.id = UUID(uuidString: id) ?? UUID()
                             habit.createdAt = createdAt
-                            habit.isActive = isActive
                             modelContext.insert(habit)
                             importedCount += 1
                         }
@@ -416,9 +413,7 @@ struct EncryptedExportImportView: View {
                            let content = json["content"] as? String,
                            let mood = json["mood"] as? Int,
                            let tags = json["tags"] as? [String],
-                           let createdAtStr = json["createdAt"] as? String,
-                           let date = dateFormatter.date(from: dateStr),
-                           let createdAt = dateFormatter.date(from: createdAtStr) {
+                           let date = dateFormatter.date(from: dateStr) {
                             
                             let entry = JournalEntry(
                                 date: date,
@@ -427,7 +422,6 @@ struct EncryptedExportImportView: View {
                                 tags: tags
                             )
                             entry.id = UUID(uuidString: id) ?? UUID()
-                            entry.createdAt = createdAt
                             modelContext.insert(entry)
                             importedCount += 1
                         }
@@ -435,21 +429,27 @@ struct EncryptedExportImportView: View {
                     case "project":
                         if let id = json["id"] as? String,
                            let name = json["name"] as? String,
-                           let goal = json["goal"] as? String,
+                           let projectDescription = json["projectDescription"] as? String,
+                           let color = json["color"] as? String,
+                           let icon = json["icon"] as? String,
                            let createdAtStr = json["createdAt"] as? String,
                            let isCompleted = json["isCompleted"] as? Bool,
                            let createdAt = dateFormatter.date(from: createdAtStr) {
                             
                             let deadline: Date? = (json["deadline"] as? String).flatMap { dateFormatter.date(from: $0) }
+                            let completedAt: Date? = (json["completedAt"] as? String).flatMap { dateFormatter.date(from: $0) }
                             
                             let project = Project(
                                 name: name,
-                                goal: goal,
+                                description: projectDescription,
+                                color: color,
+                                icon: icon,
                                 deadline: deadline
                             )
                             project.id = UUID(uuidString: id) ?? UUID()
                             project.createdAt = createdAt
                             project.isCompleted = isCompleted
+                            project.completedAt = completedAt
                             modelContext.insert(project)
                             importedCount += 1
                         }
