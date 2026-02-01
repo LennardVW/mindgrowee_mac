@@ -36,6 +36,7 @@ class EncryptedJournalEntry {
     var mood: Int // Not encrypted for filtering
     var date: Date // Not encrypted for sorting
     
+    @MainActor
     init(date: Date, content: String, mood: Int, tags: [String]) throws {
         self.id = UUID()
         self.date = date
@@ -60,11 +61,11 @@ class EncryptedJournalEntry {
         self.encryptedTags = tagsBox.ciphertext
         
         // Store nonce and tag (use content's for both, or separate)
-        self.nonce = contentBox.nonce
+        self.nonce = Data(contentBox.nonce)
         self.tag = contentBox.tag
     }
     
-    /// Decrypt and get content
+    @MainActor
     func decryptContent() throws -> String {
         guard let key = EncryptionManager.shared.masterKey else {
             throw EncryptionError.notInitialized
@@ -80,7 +81,7 @@ class EncryptedJournalEntry {
         return String(data: decryptedData, encoding: .utf8) ?? ""
     }
     
-    /// Decrypt and get tags
+    @MainActor
     func decryptTags() throws -> [String] {
         guard let key = EncryptionManager.shared.masterKey else {
             throw EncryptionError.notInitialized
@@ -97,7 +98,7 @@ class EncryptedJournalEntry {
         return try JSONDecoder().decode([String].self, from: decryptedData)
     }
     
-    /// Update entry with new content
+    @MainActor
     func update(content: String, mood: Int, tags: [String]) throws {
         self.mood = mood
         self.modifiedAt = Date()
@@ -117,7 +118,7 @@ class EncryptedJournalEntry {
         self.encryptedTags = tagsBox.ciphertext
         
         // Update nonce and tag
-        self.nonce = contentBox.nonce
+        self.nonce = Data(contentBox.nonce)
         self.tag = contentBox.tag
     }
 }
@@ -218,7 +219,7 @@ struct EncryptedJournalRow: View {
     }
     
     private func decrypt() {
-        Task {
+        Task { @MainActor in
             do {
                 let content = try entry.decryptContent()
                 let tags = try entry.decryptTags()
