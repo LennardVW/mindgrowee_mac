@@ -100,6 +100,7 @@ struct ContentView: View {
             showingExport = true
         }
         .tint(resolvedAccent)
+        .accentColor(resolvedAccent)
     }
 }
 

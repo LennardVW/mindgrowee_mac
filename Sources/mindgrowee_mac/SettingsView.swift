@@ -16,6 +16,19 @@ struct SettingsView: View {
     @AppStorage("useSystemAppearance") private var useSystemAppearance = true
     @AppStorage("accentColor") private var accentColor = "blue"
     
+    private var resolvedAccent: Color {
+        switch accentColor {
+        case "red": return .red
+        case "orange": return .orange
+        case "yellow": return .yellow
+        case "green": return .green
+        case "blue": return .blue
+        case "purple": return .purple
+        case "pink": return .pink
+        default: return .blue
+        }
+    }
+    
     @State private var showingImport = false
     @State private var showingClearData = false
     @State private var showingReset = false
@@ -151,6 +164,8 @@ struct SettingsView: View {
         .sheet(isPresented: $showingImport) {
             ImportView()
         }
+        .tint(resolvedAccent)
+        .accentColor(resolvedAccent)
         .alert("Reset Today's Progress?", isPresented: $showingReset) {
             Button("Cancel", role: .cancel) { }
             Button("Reset", role: .destructive) {
